@@ -32,15 +32,19 @@ var bcrypt = require('bcrypt');
 const saltRounds = 10;
 const authService = {
     register: (body) => __awaiter(void 0, void 0, void 0, function* () {
-        const { email, fullname, password } = body;
+        const { email, fullname, username, password } = body;
         const id_user = (0, uniqid_1.default)('USER-').toUpperCase();
         const id_role = 2;
-        const user = yield (0, connectDB_1.default)(`select * from user where email="${email}"`);
+        let user = yield (0, connectDB_1.default)(`select * from user where email="${email}"`);
         if (!_.isEmpty(user)) {
-            throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "This account already exists !");
+            throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "This email already exists !");
+        }
+        user = yield (0, connectDB_1.default)(`select * from user where username ="${username}"`);
+        if (!_.isEmpty(user)) {
+            throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "This username already exists !");
         }
         const hashPassword = yield bcrypt.hash(password, saltRounds);
-        const rows = yield (0, connectDB_1.default)(`insert into user(email, fullname, password, id_role, id_user) values('${email}','${fullname}','${hashPassword}','${id_role}','${id_user}')`);
+        const rows = yield (0, connectDB_1.default)(`insert into user(email, fullname,username, password, id_role, id_user) values('${email}','${fullname}','${username}','${hashPassword}','${id_role}','${id_user}')`);
         if (rows.insertId >= 0) {
             const users = yield (0, connectDB_1.default)(`select * from user where email='${email}'`);
             const _a = users[0], { password } = _a, other = __rest(_a, ["password"]);

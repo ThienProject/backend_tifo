@@ -10,19 +10,26 @@ const saltRounds = 10;
 
 const authService = {
   register: async (body: IUser) => {
-    const { email, fullname, password } = body;
+    const { email, fullname, username, password } = body;
     const id_user = uniqid('USER-').toUpperCase();
     const id_role = 2;
-    const user = await queryDb(`select * from user where email="${email}"`);
+    let user = await queryDb(`select * from user where email="${email}"`);
     if (!_.isEmpty(user)) {
       throw new ApiError(
         httpStatus.BAD_REQUEST,
-        "This account already exists !"
+        "This email already exists !"
+      )
+    }
+    user = await queryDb(`select * from user where username ="${username}"`);
+    if (!_.isEmpty(user)) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "This username already exists !"
       )
     }
     const hashPassword = await bcrypt.hash(password, saltRounds);
     const rows: any = await queryDb(
-      `insert into user(email, fullname, password, id_role, id_user) values('${email}','${fullname}','${hashPassword}','${id_role}','${id_user}')`
+      `insert into user(email, fullname,username, password, id_role, id_user) values('${email}','${fullname}','${username}','${hashPassword}','${id_role}','${id_user}')`
     );
     if (rows.insertId >= 0) {
       const users: any = await queryDb(`select * from user where email='${email}'`)

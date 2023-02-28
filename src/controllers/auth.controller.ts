@@ -16,9 +16,9 @@ const authController = {
     }
   },
   register: async (req: Request, res: Response, next: NextFunction) => {
-    const { email, password, fullname } = req.body;
+    const { email, password, fullname, username } = req.body;
     try {
-      const { user, messages } = await authService.register({ email, password, fullname });
+      const { user, messages } = await authService.register({ email, password, fullname, username });
       if (user) {
         res.send({
           user, messages
