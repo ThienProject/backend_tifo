@@ -1,11 +1,11 @@
 import express from 'express';
 import userController from '../controllers/user.controller'
-// import validate from '../middlewares/validate';
-// import authValidation from '../validations/auth.validation';
+import validate from '../middleware/validate';
+import userValidation from '../validations/user.validations';
 const router = express.Router();
 router.get(
   '/search',
-  // validate(authValidation.register),
+  validate(userValidation.getUsers),
   userController.getUsers
 );
 export default router;
