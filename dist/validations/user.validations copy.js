@@ -4,7 +4,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const joi_1 = __importDefault(require("joi"));
-const authValidation = {
+const userValidation = {
+    getUsers: {
+        body: joi_1.default.object().keys({
+            q: joi_1.default.string().required(),
+        }),
+    },
     getMe: {
         body: joi_1.default.object().keys({
             email: joi_1.default.string().required().email(),
@@ -18,7 +23,7 @@ const authValidation = {
     },
     register: {
         body: joi_1.default.object().keys({
-            fullname: joi_1.default.string().required(),
+            fullName: joi_1.default.string().required(),
             email: joi_1.default.string().required().email(),
             password: joi_1.default.string().required(),
             // id_role: Joi.string().required(),
@@ -26,7 +31,7 @@ const authValidation = {
     },
     updateProfile: {
         body: joi_1.default.object().keys({
-            fullname: joi_1.default.string().required(),
+            fullName: joi_1.default.string().required(),
             email: joi_1.default.string().required().email(),
             gender: joi_1.default.string().required(),
             phone: joi_1.default.string().required(),
@@ -38,4 +43,4 @@ const authValidation = {
         }),
     },
 };
-exports.default = authValidation;
+exports.default = userValidation;

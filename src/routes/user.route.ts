@@ -8,4 +8,5 @@ router.get(
   validate(userValidation.getUsers),
   userController.getUsers
 );
+
 export default router;

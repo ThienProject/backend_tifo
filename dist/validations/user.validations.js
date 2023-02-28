@@ -10,37 +10,5 @@ const userValidation = {
             q: joi_1.default.string().required(),
         }),
     },
-    getMe: {
-        body: joi_1.default.object().keys({
-            email: joi_1.default.string().required().email(),
-        }),
-    },
-    login: {
-        body: joi_1.default.object().keys({
-            email: joi_1.default.string().required().email(),
-            password: joi_1.default.string().required(),
-        }),
-    },
-    register: {
-        body: joi_1.default.object().keys({
-            fullName: joi_1.default.string().required(),
-            email: joi_1.default.string().required().email(),
-            password: joi_1.default.string().required(),
-            // id_role: Joi.string().required(),
-        }),
-    },
-    updateProfile: {
-        body: joi_1.default.object().keys({
-            fullName: joi_1.default.string().required(),
-            email: joi_1.default.string().required().email(),
-            gender: joi_1.default.string().required(),
-            phone: joi_1.default.string().required(),
-            birthDay: joi_1.default.string().required(),
-            city: joi_1.default.string().required(),
-            id_user: joi_1.default.string().required(),
-            address: joi_1.default.string().required(),
-            // avatar: Joi.string().required(),
-        }),
-    },
 };
 exports.default = userValidation;
