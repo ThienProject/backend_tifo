@@ -1,14 +1,15 @@
 import { Request, Response, NextFunction } from 'express'
 import httpStatus from 'http-status';
 import authService from '../services/auth.services';
+import tokenService from '../services/token.services'
 const authController = {
   getMe: async function (req: Request, res: Response, next: NextFunction) {
     const { email } = req.body;
     try {
-      const { user, messages } = await authService.getMe(email);
+      const { user, message } = await authService.getMe(email);
       if (user) {
         res.send({
-          user, messages
+          user, message
         });
       }
     } catch (error) {
@@ -18,10 +19,10 @@ const authController = {
   register: async (req: Request, res: Response, next: NextFunction) => {
     const { email, password, fullname, username } = req.body;
     try {
-      const { user, messages } = await authService.register({ email, password, fullname, username });
+      const { user, message } = await authService.register({ email, password, fullname, username });
       if (user) {
         res.send({
-          user, messages
+          user, message
         })
       }
     } catch (error) {
@@ -31,10 +32,14 @@ const authController = {
   login: async (req: Request, res: Response, next: NextFunction) => {
     const { email, password } = req.body;
     try {
-      const { user, messages } = await authService.login({ email, password });
+      const { user, message } = await authService.login({ email, password });
+
       if (user) {
+        const { accessToken, refreshToken } = tokenService.generateToken(user);
         res.send({
-          user, messages
+          user, message,
+          accessToken,
+          refreshToken
         })
       }
     } catch (error) {

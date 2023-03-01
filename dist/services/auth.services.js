@@ -50,7 +50,7 @@ const authService = {
             const _a = users[0], { password } = _a, other = __rest(_a, ["password"]);
             return {
                 user: other,
-                messages: 'Register success !'
+                message: 'Register success !'
             };
         }
         else {
@@ -69,7 +69,7 @@ const authService = {
             const { password } = user, userRest = __rest(user, ["password"]);
             return {
                 user: userRest,
-                messages: "Logged in successfully !"
+                message: "Logged in successfully !"
             };
         }
         else {
@@ -85,7 +85,7 @@ const authService = {
             const { password } = user, userRest = __rest(user, ["password"]);
             return {
                 user,
-                messages: "Get me success!"
+                message: "Get me success!"
             };
         }
     })

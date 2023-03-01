@@ -36,7 +36,7 @@ const authService = {
       const { password, ...other } = users[0];
       return {
         user: other,
-        messages: 'Register success !'
+        message: 'Register success !'
       };
     } else {
       throw new ApiError(
@@ -58,7 +58,7 @@ const authService = {
       const { password, ...userRest } = user;
       return {
         user: userRest,
-        messages: "Logged in successfully !"
+        message: "Logged in successfully !"
       }
     }
     else {
@@ -79,7 +79,7 @@ const authService = {
       const { password, ...userRest } = user;
       return {
         user,
-        messages: "Get me success!"
+        message: "Get me success!"
       }
     }
   }

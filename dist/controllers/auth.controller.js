@@ -13,15 +13,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const auth_services_1 = __importDefault(require("../services/auth.services"));
+const token_services_1 = __importDefault(require("../services/token.services"));
 const authController = {
     getMe: function (req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             const { email } = req.body;
             try {
-                const { user, messages } = yield auth_services_1.default.getMe(email);
+                const { user, message } = yield auth_services_1.default.getMe(email);
                 if (user) {
                     res.send({
-                        user, messages
+                        user, message
                     });
                 }
             }
@@ -33,10 +34,10 @@ const authController = {
     register: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         const { email, password, fullname, username } = req.body;
         try {
-            const { user, messages } = yield auth_services_1.default.register({ email, password, fullname, username });
+            const { user, message } = yield auth_services_1.default.register({ email, password, fullname, username });
             if (user) {
                 res.send({
-                    user, messages
+                    user, message
                 });
             }
         }
@@ -47,10 +48,13 @@ const authController = {
     login: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         const { email, password } = req.body;
         try {
-            const { user, messages } = yield auth_services_1.default.login({ email, password });
+            const { user, message } = yield auth_services_1.default.login({ email, password });
             if (user) {
+                const { accessToken, refreshToken } = token_services_1.default.generateToken(user);
                 res.send({
-                    user, messages
+                    user, message,
+                    accessToken,
+                    refreshToken
                 });
             }
         }
