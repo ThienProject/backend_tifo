@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import authService from '../services/auth.services';
 import { generateToken } from '../middleware/auth/JWT'
+import httpStatus from 'http-status';
 const authController = {
   getMe: async function (req: Request, res: Response, next: NextFunction) {
     const { email } = req.body;
@@ -20,7 +21,7 @@ const authController = {
     try {
       const { user, message } = await authService.register({ email, password, fullname, username });
       if (user) {
-        res.send({
+        res.status(httpStatus.CREATED).send({
           user, message
         })
       }
@@ -35,7 +36,7 @@ const authController = {
 
       if (user) {
         const { accessToken, refreshToken } = generateToken(user);
-        res.send({
+        res.status(httpStatus.OK).send({
           user, message,
           accessToken,
           refreshToken

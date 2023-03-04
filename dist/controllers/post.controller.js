@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const post_services_1 = __importDefault(require("../services/post.services"));
+const http_status_1 = __importDefault(require("http-status"));
 const fs = require('fs');
 const postController = {
     getPostById: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -30,7 +31,7 @@ const postController = {
                 description,
                 medias
             });
-            return res.send({
+            return res.status(http_status_1.default.CREATED).send({
                 message
             });
         }
@@ -39,8 +40,10 @@ const postController = {
         }
     }),
     update: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        return res.status(http_status_1.default.OK).send({});
     }),
     delete: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        return res.status(http_status_1.default.OK).send({});
     })
 };
 exports.default = postController;

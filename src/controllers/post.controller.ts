@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import postService from '../services/post.services';
 import { generateToken } from '../middleware/auth/JWT';
+import httpStatus from 'http-status';
 const fs = require('fs');
 
 const postController = {
@@ -29,7 +30,7 @@ const postController = {
         description,
         medias
       })
-      return res.send({
+      return res.status(httpStatus.CREATED).send({
         message
       });
     } catch (error) {
@@ -37,10 +38,14 @@ const postController = {
     }
   },
   update: async (req: Request, res: Response, next: NextFunction) => {
+    return res.status(httpStatus.OK).send({
 
+    });
   },
   delete: async (req: Request, res: Response, next: NextFunction) => {
+    return res.status(httpStatus.OK).send({
 
+    });
   }
 }
 export default postController;
