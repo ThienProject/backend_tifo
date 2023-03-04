@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const user_route_1 = __importDefault(require("./user.route"));
 const auth_route_1 = __importDefault(require("./auth.route"));
+const post_route_1 = __importDefault(require("./post.route"));
 const router = express_1.default.Router();
 const defaultRoutes = [
     {
@@ -15,6 +16,10 @@ const defaultRoutes = [
     {
         path: '/auth',
         route: auth_route_1.default,
+    },
+    {
+        path: '/post',
+        route: post_route_1.default,
     },
 ];
 defaultRoutes.forEach((route) => {

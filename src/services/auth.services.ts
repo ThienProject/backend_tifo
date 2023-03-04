@@ -11,7 +11,7 @@ const saltRounds = 10;
 const authService = {
   register: async (body: IUser) => {
     const { email, fullname, username, password } = body;
-    const id_user = uniqid('USER-').toUpperCase();
+    const id_user = uniqid('USER_').toUpperCase();
     const id_role = 2;
     let user = await queryDb(`select * from user where email="${email}"`);
     if (!_.isEmpty(user)) {

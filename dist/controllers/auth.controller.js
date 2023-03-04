@@ -13,7 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const auth_services_1 = __importDefault(require("../services/auth.services"));
-const token_services_1 = __importDefault(require("../services/token.services"));
+const JWT_1 = require("../middleware/auth/JWT");
 const authController = {
     getMe: function (req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -50,7 +50,7 @@ const authController = {
         try {
             const { user, message } = yield auth_services_1.default.login({ email, password });
             if (user) {
-                const { accessToken, refreshToken } = token_services_1.default.generateToken(user);
+                const { accessToken, refreshToken } = (0, JWT_1.generateToken)(user);
                 res.send({
                     user, message,
                     accessToken,

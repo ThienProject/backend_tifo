@@ -26,7 +26,6 @@ const config = {
 function queryDb(query) {
     return __awaiter(this, void 0, void 0, function* () {
         const connection = yield promise_1.default.createConnection(config.db);
-        console.log(query);
         const [results] = yield connection.execute(query);
         return results;
     });

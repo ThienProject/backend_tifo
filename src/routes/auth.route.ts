@@ -1,5 +1,6 @@
 import express from 'express';
 import authController from '../controllers/auth.controller'
+import { isAuth } from '../middleware/auth/auth.middleware';
 import validate from '../middleware/validate';
 import authValidation from '../validations/auth.validations';
 const router = express.Router();
@@ -17,7 +18,7 @@ router.post(
 
 router.post(
   '/getMe',
-  validate(authValidation.getMe),
+  validate(authValidation.getMe), isAuth,
   authController.getMe
 );
 

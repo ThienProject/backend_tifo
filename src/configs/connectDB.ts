@@ -15,7 +15,6 @@ const config = {
 
 async function queryDb(query: any) {
   const connection = await mysql.createConnection(config.db);
-  console.log(query)
   const [results] = await connection.execute<RowDataPacket[]>(query);
   return results;
 }

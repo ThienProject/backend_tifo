@@ -33,7 +33,7 @@ const saltRounds = 10;
 const authService = {
     register: (body) => __awaiter(void 0, void 0, void 0, function* () {
         const { email, fullname, username, password } = body;
-        const id_user = (0, uniqid_1.default)('USER-').toUpperCase();
+        const id_user = (0, uniqid_1.default)('USER_').toUpperCase();
         const id_role = 2;
         let user = yield (0, connectDB_1.default)(`select * from user where email="${email}"`);
         if (!_.isEmpty(user)) {
