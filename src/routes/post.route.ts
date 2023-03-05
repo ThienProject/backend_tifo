@@ -8,31 +8,33 @@ const router = express.Router();
 
 router.post(
   '/create',
-  // validate(postValidation.create),
   isAuth,
   upload("medias").array('medias[]', 12),
+  validate(postValidation.create),
   postController.create
 );
 
 router.post(
   '/update',
+  isAuth,
   validate(postValidation.update),
   postController.update
 );
 
 router.delete(
   '/delete',
+  isAuth,
   validate(postValidation.delete), isAuth,
   postController.delete
 );
 router.get(
   '/getPosts',
-  validate(postValidation.getPosts), isAuth,
+  validate(postValidation.getPosts),
   postController.getPosts
 );
 router.get(
   '/getPostById',
-  validate(postValidation.getPostById), isAuth,
+  validate(postValidation.getPostById),
   postController.getPostById
 );
 

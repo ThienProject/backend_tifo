@@ -7,11 +7,15 @@ const joi_1 = __importDefault(require("joi"));
 const postValidation = {
     create: {
         body: joi_1.default.object().keys({
-            medias: joi_1.default.allow().required(),
-            id_target: joi_1.default.string().required(),
-            id_type: joi_1.default.string().required(),
+            medias: joi_1.default.array().required().items(joi_1.default.object({
+                filename: joi_1.default.string().required(),
+                mimetype: joi_1.default.string().valid('image/png', 'image/jpg', 'image/jpeg', 'video/mp4', 'video/quicktime').required(),
+                size: joi_1.default.number().max(10 * 1024 * 1024).required() // 10MB
+            })),
+            target: joi_1.default.string().required(),
+            type: joi_1.default.string().required(),
             description: joi_1.default.string(),
-            id_user: joi_1.default.string().required()
+            id_user: joi_1.default.string().required(),
         }),
     },
     update: {
@@ -30,9 +34,10 @@ const postValidation = {
         }),
     },
     getPosts: {
-        body: joi_1.default.object().keys({
-            id_post: joi_1.default.string().required(),
-            limit: joi_1.default.string().required(),
+        query: joi_1.default.object().keys({
+            id_user: joi_1.default.string().required(),
+            limit: joi_1.default.number().required(),
+            offset: joi_1.default.number().required(),
         }),
     }
 };

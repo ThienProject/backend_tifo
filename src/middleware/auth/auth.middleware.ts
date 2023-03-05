@@ -4,19 +4,26 @@ import ApiError from '../../utils/ApiError';
 import httpStatus from 'http-status';
 export const isAuth = async (req: Request, res: Response, next: NextFunction) => {
 	// Lấy access token từ header
-	const accessTokenFromHeader = req.headers.authorization;
-	const accessToken = accessTokenFromHeader?.split(' ')[1];
-
-
-	const isValidToken = accessToken && validateToken(accessToken);
-	if (!isValidToken) {
-		const refreshTokenFromHeader = req.headers.refreshtoken?.toString();
+	try {
+		const accessTokenFromHeader = req.headers.authorization;
+		const refreshTokenFromHeader = req.headers.refreshtoken?.toString() || '';
+		const accessToken = accessTokenFromHeader?.split(' ')[1];
 		const refreshToken = refreshTokenFromHeader && refreshTokenFromHeader.split(' ')[1];
-		const verifiedRefreshToken = refreshToken && validateRefreshToken(refreshToken);
-		if (!verifiedRefreshToken) {
-			next(new ApiError(httpStatus.BAD_GATEWAY, 'token is expired!'));
-			// return  res.status(401).send();
+		const isValidToken = accessToken && validateToken(accessToken);
+		// console.log("isValidToken", isValidToken);
+		// console.log("accessToken", accessTokenFromHeader);
+		// console.log("refreshToken--------------------------------------------------------------------------");
+		// console.log("refreshToken", refreshToken);
+		if (!isValidToken) {
+			const verifiedRefreshToken = refreshToken && validateRefreshToken(refreshToken);
+			console.log("verifiedRefreshToken", verifiedRefreshToken);
+			if (!verifiedRefreshToken) {
+				next();
+				// return  res.status(401).send();
+			}
 		}
+		return next();
+	} catch (error) {
+		next(new ApiError(httpStatus.BAD_GATEWAY, 'Login timeout. Please login again !'));
 	}
-	return next();
 };

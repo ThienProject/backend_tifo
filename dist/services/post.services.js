@@ -19,9 +19,9 @@ const http_status_1 = __importDefault(require("http-status"));
 var _ = require('lodash');
 const postService = {
     create: (body) => __awaiter(void 0, void 0, void 0, function* () {
-        const { id_user, id_target, id_type, description, medias } = body;
+        const { id_user, target, type, description, medias } = body;
         const id_post = (0, uniqid_1.default)('POST_').toUpperCase();
-        const row = yield (0, connectDB_1.default)(`insert into post (id_post,id_user, id_target, id_type, description) value ('${id_post}', '${id_user}', '${id_target}', '${id_type}', '${description}')`);
+        const row = yield (0, connectDB_1.default)(`insert into post (id_post,id_user, target, type, description) value ('${id_post}', '${id_user}', '${target}', '${type}', '${description}')`);
         if (row.insertId >= 0) {
             if (medias) {
                 let queryMedia = `insert into media (id_media, id_post, media_link, type_media) value `;
@@ -48,6 +48,29 @@ const postService = {
         }
         else {
             throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'create post failed, please try again later!');
+        }
+    }),
+    getPosts: (query) => __awaiter(void 0, void 0, void 0, function* () {
+        const { id_user, offset, limit } = query;
+        const sql = `SELECT post.*, user.username, user.fullname, user.avatar  FROM post, user, follow WHERE user.id_user =
+    '${id_user}' and follow.id_follower = '${id_user}' and follow.id_user = post.id_user and post.target = 'public' limit ${limit} offset ${offset}`;
+        console.log(sql);
+        const rows = yield (0, connectDB_1.default)(sql);
+        if (_.isEmpty(rows))
+            throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "Can't find out posts!");
+        else {
+            const posts = rows;
+            for (let i = 0; i <= posts.length - 1; i++) {
+                const id_post = posts[i].id_post;
+                const comments = yield (0, connectDB_1.default)(`select *from comment where id_post = '${id_post}'`);
+                posts[i].comments = comments;
+                const medias = yield (0, connectDB_1.default)(`select *from media where id_post = '${id_post}'`);
+                posts[i].medias = medias;
+            }
+            return {
+                posts,
+                message: "Get posts success!"
+            };
         }
     })
 };

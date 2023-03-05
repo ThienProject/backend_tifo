@@ -3,11 +3,17 @@ import { messageRequired } from '../utils/common';
 const postValidation = {
   create: {
     body: Joi.object().keys({
-      medias: Joi.allow().required(),
-      id_target: Joi.string().required(),
-      id_type: Joi.string().required(),
+      medias: Joi.array().required().items(
+        Joi.object({
+          filename: Joi.string().required(),
+          mimetype: Joi.string().valid('image/png', 'image/jpg', 'image/jpeg', 'video/mp4', 'video/quicktime').required(),
+          size: Joi.number().max(10 * 1024 * 1024).required() // 10MB
+        })
+      ),
+      target: Joi.string().required(),
+      type: Joi.string().required(),
       description: Joi.string(),
-      id_user: Joi.string().required()
+      id_user: Joi.string().required(),
     }),
   },
   update: {
@@ -26,10 +32,10 @@ const postValidation = {
     }),
   },
   getPosts: {
-    body: Joi.object().keys({
-      id_post: Joi.string().required(),
-      limit: Joi.string().required(),
-
+    query: Joi.object().keys({
+      id_user: Joi.string().required(),
+      limit: Joi.number().required(),
+      offset: Joi.number().required(),
     }),
   }
 }

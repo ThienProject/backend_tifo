@@ -19,15 +19,28 @@ const postController = {
     getPostById: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     }),
     getPosts: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const query = req.query;
+        try {
+            const { posts, message } = yield post_services_1.default.getPosts(query);
+            if (posts) {
+                return res.status(http_status_1.default.OK).send({
+                    posts: posts,
+                    message: message
+                });
+            }
+        }
+        catch (error) {
+            next(error);
+        }
     }),
     create: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-        const { id_user, id_target, id_type, description, } = req.body;
+        const { id_user, target, type, description, } = req.body;
         const medias = req.files;
         try {
             const { message } = yield post_services_1.default.create({
                 id_user,
-                id_target,
-                id_type,
+                target,
+                type,
                 description,
                 medias
             });

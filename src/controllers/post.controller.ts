@@ -2,6 +2,9 @@ import { Request, Response, NextFunction } from 'express'
 import postService from '../services/post.services';
 import { generateToken } from '../middleware/auth/JWT';
 import httpStatus from 'http-status';
+import { IGetPosts } from '../types/post';
+import ApiError from '../utils/ApiError';
+import { send } from 'process';
 const fs = require('fs');
 
 const postController = {
@@ -9,14 +12,24 @@ const postController = {
 
   },
   getPosts: async (req: Request, res: Response, next: NextFunction) => {
-
+    const query: IGetPosts = req.query;
+    try {
+      const { posts, message } = await postService.getPosts(query);
+      if (posts) {
+        return res.status(httpStatus.OK).send({
+          posts: posts,
+          message: message
+        })
+      }
+    } catch (error) {
+      next(error);
+    }
   },
   create: async (req: Request, res: Response, next: NextFunction) => {
-
     const {
       id_user,
-      id_target,
-      id_type,
+      target,
+      type,
       description,
 
     } = req.body;
@@ -25,8 +38,8 @@ const postController = {
     try {
       const { message } = await postService.create({
         id_user,
-        id_target,
-        id_type,
+        target,
+        type,
         description,
         medias
       })
