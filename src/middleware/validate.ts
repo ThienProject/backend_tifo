@@ -6,7 +6,7 @@ import pick from '../utils/pick';
 
 const validate = (schema: any) =>
   (req: Request, res: Response, next: NextFunction) => {
-    const validSchema = pick(schema, ['params', 'query', 'body']);
+    const validSchema = pick(schema, ['params', 'query', 'body', 'files']);
     const object = pick(req, Object.keys(validSchema));
     const { value, error } = Joi.compile(validSchema)
       .prefs({ errors: { label: 'key' }, abortEarly: false })

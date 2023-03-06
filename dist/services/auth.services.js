@@ -44,7 +44,7 @@ const authService = {
             throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "This username already exists !");
         }
         const hashPassword = yield bcrypt.hash(password, saltRounds);
-        const rows = yield (0, connectDB_1.default)(`insert into user(email, fullname,username, password, id_role, id_user) values('${email}','${fullname}','${username}','${hashPassword}','${id_role}','${id_user}')`);
+        const rows = yield (0, connectDB_1.default)(`insert into user(email, fullname,username, password, id_role, id_user, avatar) values('${email}','${fullname}','${username}','${hashPassword}','${id_role}','${id_user}', 'account.jpg')`);
         if (rows.insertId >= 0) {
             const users = yield (0, connectDB_1.default)(`select * from user where email='${email}'`);
             const _a = users[0], { password } = _a, other = __rest(_a, ["password"]);

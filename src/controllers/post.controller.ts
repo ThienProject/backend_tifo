@@ -31,7 +31,6 @@ const postController = {
       target,
       type,
       description,
-
     } = req.body;
     const medias: any = req.files;
 

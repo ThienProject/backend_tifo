@@ -8,7 +8,7 @@ const joi_1 = __importDefault(require("joi"));
 const ApiError_1 = __importDefault(require("../utils/ApiError"));
 const pick_1 = __importDefault(require("../utils/pick"));
 const validate = (schema) => (req, res, next) => {
-    const validSchema = (0, pick_1.default)(schema, ['params', 'query', 'body']);
+    const validSchema = (0, pick_1.default)(schema, ['params', 'query', 'body', 'files']);
     const object = (0, pick_1.default)(req, Object.keys(validSchema));
     const { value, error } = joi_1.default.compile(validSchema)
         .prefs({ errors: { label: 'key' }, abortEarly: false })

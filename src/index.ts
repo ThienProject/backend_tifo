@@ -12,7 +12,7 @@ morgan('dev') // log info request
 app.use(express.json()); // convert json to javascript type;
 app.use(express.urlencoded({ extended: true })); //convert application/x-www-form-urlencoded (form data)
 // config path media
-app.use('/', express.static('public'));
+app.use('/', express.static('src/public'));
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   if (err instanceof multer.MulterError) {

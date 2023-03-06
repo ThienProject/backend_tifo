@@ -17,7 +17,7 @@ const app = (0, express_1.default)();
 app.use(express_1.default.json()); // convert json to javascript type;
 app.use(express_1.default.urlencoded({ extended: true })); //convert application/x-www-form-urlencoded (form data)
 // config path media
-app.use('/', express_1.default.static('public'));
+app.use('/', express_1.default.static('src/public'));
 app.use((err, req, res, next) => {
     if (err instanceof multer_1.default.MulterError) {
         // A Multer error occurred when uploading the files

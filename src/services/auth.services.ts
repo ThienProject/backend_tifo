@@ -29,7 +29,7 @@ const authService = {
     }
     const hashPassword = await bcrypt.hash(password, saltRounds);
     const rows: any = await queryDb(
-      `insert into user(email, fullname,username, password, id_role, id_user) values('${email}','${fullname}','${username}','${hashPassword}','${id_role}','${id_user}')`
+      `insert into user(email, fullname,username, password, id_role, id_user, avatar) values('${email}','${fullname}','${username}','${hashPassword}','${id_role}','${id_user}', 'account.jpg')`
     );
     if (rows.insertId >= 0) {
       const users: any = await queryDb(`select * from user where email='${email}'`)
