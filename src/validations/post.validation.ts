@@ -39,7 +39,7 @@ const postValidation = {
   },
   getPosts: {
     query: Joi.object().keys({
-      id_user: Joi.string().required(),
+      id_user: Joi.string().allow(null).allow(''),
       limit: Joi.number().required(),
       offset: Joi.number().required(),
     }),

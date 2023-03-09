@@ -31,7 +31,6 @@ app.use(
   })
 );
 
-
 // v1 api routes
 app.use('/api/v1', routes);
 app.get('/', (req: Request, res: Response) => {
@@ -40,7 +39,26 @@ app.get('/', (req: Request, res: Response) => {
 
 app.use(errorConverter);
 app.use(errorHandler);
+const server = require('http').createServer(app);
+export const io = require('socket.io')(server, {
+  cors: {
+    origin: 'http://localhost:3000',
+    methods: ["GET", "POST"]
+  }
+});
 
-app.listen(port, () => {
+
+
+io.on("connection", (socket: any) => {
+  console.log("connection io")
+  console.log(`⚡: ${socket.id} user just connected!`);
+
+  socket.on("disconnect", () => {
+    console.log("🔥: A user disconnected");
+  });
+});
+
+
+server.listen(port, () => {
   console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
 });

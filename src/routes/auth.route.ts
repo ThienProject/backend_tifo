@@ -22,4 +22,5 @@ router.post(
   authController.getMe
 );
 
+
 export default router;

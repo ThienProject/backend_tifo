@@ -23,11 +23,13 @@ const config = {
     },
     listPerPage: 10,
 };
+const connection = promise_1.default.createConnection(config.db);
 function queryDb(query) {
     return __awaiter(this, void 0, void 0, function* () {
-        const connection = yield promise_1.default.createConnection(config.db);
-        const [results] = yield connection.execute(query);
-        return results;
+        if (connection) {
+            const [results] = yield (yield connection).execute(query);
+            return results;
+        }
     });
 }
 exports.default = queryDb;

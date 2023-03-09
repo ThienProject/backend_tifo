@@ -12,11 +12,13 @@ const config = {
   },
   listPerPage: 10,
 };
-
+const connection = mysql.createConnection(config.db);
 async function queryDb(query: any) {
-  const connection = await mysql.createConnection(config.db);
-  const [results] = await connection.execute<RowDataPacket[]>(query);
-  return results;
+  if (connection) {
+    const [results] = await (await connection).execute<RowDataPacket[]>(query);
+    return results;
+
+  }
 }
 
 export default queryDb;

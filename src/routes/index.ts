@@ -2,6 +2,8 @@ import express from 'express';
 import userRoute from './user.route'
 import authRoute from './auth.route'
 import postRoute from './post.route'
+import commentRoute from './comment.route'
+
 const router = express.Router();
 const defaultRoutes = [
   {
@@ -15,6 +17,10 @@ const defaultRoutes = [
   {
     path: '/post',
     route: postRoute,
+  },
+  {
+    path: '/comment',
+    route: commentRoute,
   },
 ]
 defaultRoutes.forEach((route) => {

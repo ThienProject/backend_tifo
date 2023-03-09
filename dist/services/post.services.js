@@ -55,13 +55,14 @@ const postService = {
         const { id_user, offset, limit } = query;
         const sql = id_user !== '' ? `SELECT post.*, user.id_user, user.username, user.avatar, user.fullname FROM post ,follow, user WHERE (( follow.id_follower = 'id_user' 
 and follow.id_user = post.id_user and post.target = 'follower') or (post.target = 'public')) and type = 'post' and post.id_user = user.id_user limit ${limit} offset ${offset}`
-            : `SELECT post.*, user.username, user.fullname, user.avatar  FROM post, user where post.id_user = user.id_user and post.target = 'public' and type = 'post' limit ${limit} offset ${offset}`;
+            : `SELECT post.*, user.username, user.fullname, user.avatar FROM post, user where post.id_user = user.id_user and post.target = 'public' and type = 'post' limit ${limit} offset ${offset}`;
         const rows = yield (0, connectDB_1.default)(sql);
         const posts = rows;
         for (let i = 0; i <= posts.length - 1; i++) {
             const id_post = posts[i].id_post;
-            const comments = yield (0, connectDB_1.default)(`select comment.*, user.id_user,user.avatar, user.fullname, user.username from comment, user where id_post = '${id_post}' and user.id_user = comment.id_user `);
-            posts[i].comments = comments;
+            const commentLength = yield (0, connectDB_1.default)(`select count(comment.id_comment) as commentLength from comment where comment.id_post = '${id_post}' `);
+            // const comments = await queryDb(`select comment.*, user.id_user,user.avatar, user.fullname, user.username from comment, user where id_post = '${id_post}' and user.id_user = comment.id_user `);
+            posts[i].commentLength = commentLength[0].commentLength;
             const medias = yield (0, connectDB_1.default)(`select *from media where id_post = '${id_post}'`);
             posts[i].medias = medias;
         }
