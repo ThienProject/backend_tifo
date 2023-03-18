@@ -17,6 +17,7 @@ router.post(
 router.post(
   '/update',
   isAuth,
+  upload("medias").array('medias[]', 12),
   validate(postValidation.update),
   postController.update
 );
@@ -32,10 +33,25 @@ router.get(
   validate(postValidation.getPosts),
   postController.getPosts
 );
+
 router.get(
-  '/getPostById',
-  validate(postValidation.getPostById),
-  postController.getPostById
+  '/getPostByID',
+  validate(postValidation.getPostByID),
+  postController.getPostByID
+);
+router.post(
+  '/update',
+  validate(postValidation.getPostByID),
+  postController.update
+);
+router.post(
+  '/replaceMedias',
+  upload("medias").array('medias', 12),
+  postController.replaceMedias
+);
+router.post(
+  '/deleteMedias',
+  postController.deleteMedias
 );
 
 export default router;

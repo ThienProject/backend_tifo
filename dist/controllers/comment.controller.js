@@ -15,7 +15,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const comment_services_1 = __importDefault(require("../services/comment.services"));
 const http_status_1 = __importDefault(require("http-status"));
 const __1 = require("..");
-const fs = require('fs');
 const commentController = {
     getComments: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         const query = req.query;

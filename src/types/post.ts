@@ -7,10 +7,15 @@ export interface IPost {
   description?: string,
   is_banned?: boolean,
   banned_reason?: string,
+  loves?: number | string,
+  view?: number | string,
   medias?: [],
 }
 export interface IGetPosts {
   id_user?: string,
   offset?: number,
   limit?: number,
+}
+export interface IGetPostByID {
+  id_post?: string,
 }

@@ -23,6 +23,10 @@ const defaultRoutes = [
         route: post_route_1.default,
     },
     {
+        path: '/user',
+        route: user_route_1.default,
+    },
+    {
         path: '/comment',
         route: comment_route_1.default,
     },

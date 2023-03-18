@@ -1,14 +1,13 @@
 import { Request, Response, NextFunction } from 'express'
 import commentServices from '../services/comment.services';
-import { generateToken } from '../middleware/auth/JWT';
+
 import httpStatus from 'http-status';
-import ApiError from '../utils/ApiError';
-import { send } from 'process';
+
 import { IGetComments } from '../types/comment';
-import { compile } from 'joi';
+
 import { io } from '..';
 
-const fs = require('fs');
+
 
 const commentController = {
   getComments: async (req: Request, res: Response, next: NextFunction) => {

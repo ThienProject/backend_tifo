@@ -19,6 +19,10 @@ const defaultRoutes = [
     route: postRoute,
   },
   {
+    path: '/user',
+    route: userRoute,
+  },
+  {
     path: '/comment',
     route: commentRoute,
   },

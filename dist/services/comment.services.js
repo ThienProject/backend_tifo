@@ -34,11 +34,11 @@ const commentServices = {
         const row = yield (0, connectDB_1.default)(sql);
         if (row.insertId >= 0) {
             const lastRow = yield (0, connectDB_1.default)('SELECT comment.*, user.id_user, user.avatar, user.fullname, user.username FROM comment, user WHERE user.id_user = comment.id_user ORDER BY id_comment DESC LIMIT 1');
-            const commentRow = lastRow[0];
+            const commentRow = lastRow && lastRow[0];
             const id_reply = commentRow === null || commentRow === void 0 ? void 0 : commentRow.id_reply;
             if (id_reply != 0) {
                 const replyRow = yield (0, connectDB_1.default)(`SELECT  comment.*, user.id_user, user.avatar, user.fullname, user.username FROM comment, user WHERE id_comment =  '${id_reply}' and user.id_user = comment.id_user`);
-                commentRow.reply = replyRow[0];
+                commentRow.reply = replyRow && replyRow[0];
             }
             return {
                 newComment: commentRow,

@@ -11,8 +11,11 @@ const post_validation_1 = __importDefault(require("../validations/post.validatio
 const upload_1 = __importDefault(require("../middleware/upload"));
 const router = express_1.default.Router();
 router.post('/create', auth_middleware_1.isAuth, (0, upload_1.default)("medias").array('medias[]', 12), (0, validate_1.default)(post_validation_1.default.create), post_controller_1.default.create);
-router.post('/update', auth_middleware_1.isAuth, (0, validate_1.default)(post_validation_1.default.update), post_controller_1.default.update);
+router.post('/update', auth_middleware_1.isAuth, (0, upload_1.default)("medias").array('medias[]', 12), (0, validate_1.default)(post_validation_1.default.update), post_controller_1.default.update);
 router.delete('/delete', auth_middleware_1.isAuth, (0, validate_1.default)(post_validation_1.default.delete), auth_middleware_1.isAuth, post_controller_1.default.delete);
 router.get('/getPosts', (0, validate_1.default)(post_validation_1.default.getPosts), post_controller_1.default.getPosts);
-router.get('/getPostById', (0, validate_1.default)(post_validation_1.default.getPostById), post_controller_1.default.getPostById);
+router.get('/getPostByID', (0, validate_1.default)(post_validation_1.default.getPostByID), post_controller_1.default.getPostByID);
+router.post('/update', (0, validate_1.default)(post_validation_1.default.getPostByID), post_controller_1.default.update);
+router.post('/replaceMedias', (0, upload_1.default)("medias").array('medias', 12), post_controller_1.default.replaceMedias);
+router.post('/deleteMedias', post_controller_1.default.deleteMedias);
 exports.default = router;

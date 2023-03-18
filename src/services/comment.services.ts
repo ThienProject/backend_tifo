@@ -21,11 +21,11 @@ const commentServices = {
     const row: any = await queryDb(sql);
     if (row.insertId >= 0) {
       const lastRow = await queryDb('SELECT comment.*, user.id_user, user.avatar, user.fullname, user.username FROM comment, user WHERE user.id_user = comment.id_user ORDER BY id_comment DESC LIMIT 1');
-      const commentRow: RowDataPacket = lastRow[0];
+      const commentRow: any = lastRow && lastRow[0];
       const id_reply = commentRow?.id_reply;
       if (id_reply != 0) {
         const replyRow = await queryDb(`SELECT  comment.*, user.id_user, user.avatar, user.fullname, user.username FROM comment, user WHERE id_comment =  '${id_reply}' and user.id_user = comment.id_user`);
-        commentRow.reply = replyRow[0];
+        commentRow.reply = replyRow && replyRow[0];
       }
       return {
         newComment: commentRow,
@@ -37,10 +37,10 @@ const commentServices = {
 
   getComments: async (query: IGetComments) => {
     const { id_post } = query;
-    const comments: RowDataPacket[] = await queryDb(`select comment.*, user.id_user,user.avatar, user.fullname, user.username from comment, user where id_post = '${id_post}' and user.id_user = comment.id_user `);
+    const comments: any = await queryDb(`select comment.*, user.id_user,user.avatar, user.fullname, user.username from comment, user where id_post = '${id_post}' and user.id_user = comment.id_user `);
     const roofCmt = [...comments];
     // console.log(comments)
-    const solveComment = (comments: RowDataPacket[]) => {
+    const solveComment = (comments: any[]) => {
       for (let i = 0; i < comments.length; i++) {
         if (comments[i].id_parent == 0) {
           for (let j = 0; j < comments.length; j++) {
