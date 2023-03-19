@@ -46,7 +46,7 @@ const postController = {
     const medias: any = req.files;
 
     try {
-      const { message } = await postService.create({
+      const { message, post } = await postService.create({
         id_user,
         target,
         type,
@@ -54,7 +54,8 @@ const postController = {
         medias
       })
       return res.status(httpStatus.CREATED).send({
-        message
+        message,
+        post
       });
     } catch (error) {
       next(error);
@@ -63,7 +64,6 @@ const postController = {
   update: async (req: Request, res: Response, next: NextFunction) => {
     const {
       id_post,
-      loves,
       view,
       banned_reason,
       is_banned,
@@ -76,7 +76,6 @@ const postController = {
     try {
       const { message, post } = await postService.update({
         id_post,
-        loves,
         view,
         banned_reason,
         is_banned,
@@ -87,6 +86,26 @@ const postController = {
       })
       return res.status(httpStatus.CREATED).send({
         message, post
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+  updateLove: async (req: Request, res: Response, next: NextFunction) => {
+    const {
+      id_post,
+      isLove,
+      id_user
+    } = req.body;
+
+    try {
+      const { message, loves } = await postService.updateLove({
+        id_post,
+        isLove,
+        id_user
+      })
+      return res.status(httpStatus.CREATED).send({
+        message, loves
       });
     } catch (error) {
       next(error);
@@ -124,9 +143,17 @@ const postController = {
     }
   },
   delete: async (req: Request, res: Response, next: NextFunction) => {
-    return res.status(httpStatus.OK).send({
-
-    });
+    const { id_post } = req.body;
+    try {
+      const { message } = await postService.delete({ id_post });
+      if (message) {
+        return res.status(httpStatus.OK).send({
+          message: message
+        })
+      }
+    } catch (error) {
+      next(error);
+    }
   }
 }
 export default postController;

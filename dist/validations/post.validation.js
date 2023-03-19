@@ -48,6 +48,13 @@ const postValidation = {
             id_post: joi_1.default.string().required(),
         }),
     },
+    updateLove: {
+        body: joi_1.default.object().keys({
+            id_post: joi_1.default.string().required(),
+            id_user: joi_1.default.string().required(),
+            isLove: joi_1.default.boolean().required()
+        }),
+    },
     getPosts: {
         query: joi_1.default.object().keys({
             id_user: joi_1.default.string().allow(null).allow(''),

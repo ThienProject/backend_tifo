@@ -25,7 +25,7 @@ router.post(
 router.delete(
   '/delete',
   isAuth,
-  validate(postValidation.delete), isAuth,
+  validate(postValidation.delete),
   postController.delete
 );
 router.get(
@@ -40,10 +40,10 @@ router.get(
   postController.getPostByID
 );
 router.post(
-  '/update',
+  '/updateLove',
   isAuth,
-  validate(postValidation.getPostByID),
-  postController.update
+  validate(postValidation.updateLove),
+  postController.updateLove
 );
 router.post(
   '/replaceMedias',

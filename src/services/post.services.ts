@@ -30,7 +30,9 @@ const postService = {
 
         const rowImg: any = await queryDb(queryMedia);
         if (rowImg.insertId >= 0) {
+          const { post } = await postService.getPostByID({ id_post: id_post })
           return {
+            post,
             message: 'Create post success !'
           }
         }
@@ -47,9 +49,28 @@ const postService = {
   },
   getPosts: async (query: IGetPosts) => {
     const { id_user, offset, limit } = query;
-    const sql = id_user !== '' ? `SELECT post.*, user.id_user, user.username, user.avatar, user.fullname FROM post ,follow, user WHERE (( follow.id_follower = 'id_user' 
-      and follow.id_user = post.id_user and post.target = 'follower') or (post.target = 'public')) and type = 'post' and post.id_user = user.id_user limit ${limit} offset ${offset}`
-      : `SELECT post.*, user.username, user.fullname, user.avatar FROM post, user where post.id_user = user.id_user and post.target = 'public' and type = 'post' limit ${limit} offset ${offset}`;
+    const sql = id_user !== ''
+      ?
+      `SELECT post.*, user.id_user, user.username, user.avatar, user.fullname, count(love.id_user) as loves,
+        CASE WHEN love.id_user = '${id_user}' THEN true ELSE false END AS isLove
+        FROM post
+        LEFT JOIN user ON post.id_user = user.id_user
+        LEFT JOIN love ON post.id_post = love.id_post
+        LEFT JOIN follow ON follow.id_user = post.id_user AND post.target = 'follower' AND follow.id_follower = '${id_user}' 
+                          OR post.target = 'public'
+        WHERE post.type = 'post'
+        GROUP BY post.id_post, user.id_user
+        ORDER BY post.date_time DESC
+        LIMIT ${limit} OFFSET ${offset};`
+      :
+      `SELECT post.*, user.username, user.fullname, user.avatar, COUNT(love.id_user) AS loves 
+        FROM post 
+        LEFT JOIN user ON post.id_user = user.id_user 
+        LEFT JOIN love ON love.id_post = post.id_post 
+        WHERE post.target = 'public' AND post.type = 'post'
+        GROUP BY post.id_post, user.id_user
+        ORDER BY post.date_time DESC
+        LIMIT ${limit} OFFSET ${offset};`;
 
     const rows: any = await queryDb(sql)
 
@@ -69,8 +90,19 @@ const postService = {
 
   },
   getPostByID: async (query: IGetPostByID) => {
-    const { id_post } = query;
-    const sql = `SELECT post.* FROM post where post.id_post = '${id_post}'`;
+    const { id_post, id_user } = query;
+    const sql = `SELECT post.*,  
+              user.id_user,
+              user.username,
+              user.avatar,
+              user.fullname,
+              count(love.id_user) as loves
+              ${id_user ? `, CASE WHEN love.id_user = '${id_user}' THEN true ELSE false END AS isLove` : ' '} 
+              FROM post, user, love 
+              where 
+              post.id_user = user.id_user 
+              and post.id_post = '${id_post}' 
+              and love.id_post = post.id_post`;
     const rows: any = await queryDb(sql)
     if (rows.length > 0) {
       const post = rows[0];
@@ -115,12 +147,67 @@ const postService = {
       const { post } = await postService.getPostByID({ id_post })
       return {
         post,
-        message: 'Create post success !'
+        message: 'update post success !'
       }
     } else {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'create post failed, please try again later!');
+      throw new ApiError(httpStatus.BAD_REQUEST, 'update post failed, please try again later!');
     }
   },
+  updateLove: async (body: any) => {
+    const { id_post,
+      isLove,
+      id_user } = body;
+    let sql = isLove ? `insert into love value ('${id_user}', '${id_post}')` : `delete from love where id_user = '${id_user}' and id_post = '${id_post}'`;
+    const row: any = await queryDb(sql);
+    if (row.insertId >= 0) {
+      let sql = `select count(id_user) as love from love where id_post =  '${id_post}'`
+      const row: any = await queryDb(sql);
+      const loves = row[0].love;
+      return {
+        loves: loves,
+        message: 'love post success !'
+      }
+    } else {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'love post failed, please try again later!');
+    }
+  },
+  delete: async (body: any) => {
+    const { id_post } = body;
+    const sqlMedia = `select * from media where id_post = '${id_post}'`;
+    const rowMedia: any = await queryDb(sqlMedia);
+    if (rowMedia.length >= 0) {
+      const sqlDlePost = `delete from post where id_post = '${id_post}'`;
+      const rowDlePost: any = await queryDb(sqlDlePost);
+      if (rowDlePost.insertId >= 0 && rowMedia.length > 0) {
+        for (let i = 0; i < rowMedia.length; i++) {
+          const oldFile = rowMedia[i]
+          const imagePath = path.join(__dirname, '../../src/public/medias', oldFile.media_link);
+          if (fs.existsSync(imagePath)) {
+            // Sử dụng phương thức unlink để xóa tập tin
+            await fs.unlink(imagePath, (err: any) => {
+              if (err) {
+                return {
+                  message: err
+                }
+              }
+            });
+            console.log("delete success!");
+          } else {
+            console.log("can't find out file in server " + " in " + imagePath)
+          }
+        }
+      } else {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Delete post failed, please try again later!');
+      }
+
+      return {
+        message: 'Delete post success !'
+      }
+    } else {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Can not find any media');
+    }
+  }
+  ,
   replaceMedias: async (body: any) => {
     const {
       old_medias,
@@ -176,7 +263,7 @@ const postService = {
       }
 
     } else {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'create post failed, please try again later!');
+      throw new ApiError(httpStatus.BAD_REQUEST, 'replace medias failed, please try again later!');
     }
   },
   deleteMedias: async (body: any) => {

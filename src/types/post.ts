@@ -17,5 +17,6 @@ export interface IGetPosts {
   limit?: number,
 }
 export interface IGetPostByID {
+  id_user?: string,
   id_post?: string,
 }

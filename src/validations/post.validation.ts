@@ -48,6 +48,13 @@ const postValidation = {
       id_post: Joi.string().required(),
     }),
   },
+  updateLove: {
+    body: Joi.object().keys({
+      id_post: Joi.string().required(),
+      id_user: Joi.string().required(),
+      isLove: Joi.boolean().required()
+    }),
+  },
   getPosts: {
     query: Joi.object().keys({
       id_user: Joi.string().allow(null).allow(''),

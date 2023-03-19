@@ -50,7 +50,7 @@ const postController = {
         const { id_user, target, type, description, } = req.body;
         const medias = req.files;
         try {
-            const { message } = yield post_services_1.default.create({
+            const { message, post } = yield post_services_1.default.create({
                 id_user,
                 target,
                 type,
@@ -58,7 +58,8 @@ const postController = {
                 medias
             });
             return res.status(http_status_1.default.CREATED).send({
-                message
+                message,
+                post
             });
         }
         catch (error) {
@@ -66,12 +67,11 @@ const postController = {
         }
     }),
     update: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-        const { id_post, loves, view, banned_reason, is_banned, id_user, target, description, } = req.body;
+        const { id_post, view, banned_reason, is_banned, id_user, target, description, } = req.body;
         const medias = req.files;
         try {
             const { message, post } = yield post_services_1.default.update({
                 id_post,
-                loves,
                 view,
                 banned_reason,
                 is_banned,
@@ -82,6 +82,22 @@ const postController = {
             });
             return res.status(http_status_1.default.CREATED).send({
                 message, post
+            });
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
+    updateLove: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const { id_post, isLove, id_user } = req.body;
+        try {
+            const { message, loves } = yield post_services_1.default.updateLove({
+                id_post,
+                isLove,
+                id_user
+            });
+            return res.status(http_status_1.default.CREATED).send({
+                message, loves
             });
         }
         catch (error) {
@@ -120,7 +136,18 @@ const postController = {
         }
     }),
     delete: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-        return res.status(http_status_1.default.OK).send({});
+        const { id_post } = req.body;
+        try {
+            const { message } = yield post_services_1.default.delete({ id_post });
+            if (message) {
+                return res.status(http_status_1.default.OK).send({
+                    message: message
+                });
+            }
+        }
+        catch (error) {
+            next(error);
+        }
     })
 };
 exports.default = postController;
