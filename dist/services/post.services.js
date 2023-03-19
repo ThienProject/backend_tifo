@@ -128,18 +128,10 @@ const postService = {
                 }
                 queryMedia = queryMedia.substring(0, queryMedia.length - 1);
                 const rowImg = yield (0, connectDB_1.default)(queryMedia);
-                if (rowImg.insertId >= 0) {
-                    const { post } = yield postService.getPostByID({ id_post });
-                    return {
-                        post,
-                        message: 'Create post success !'
-                    };
-                }
-                else {
-                    throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'An error occurred with medias, please try again later!');
-                }
             }
+            const { post } = yield postService.getPostByID({ id_post });
             return {
+                post,
                 message: 'Create post success !'
             };
         }

@@ -110,20 +110,11 @@ const postService = {
           queryMedia += `('${id_media}', '${id_post}', '${file.filename}', '${mimetype}'),`
         }
         queryMedia = queryMedia.substring(0, queryMedia.length - 1);
-
         const rowImg: any = await queryDb(queryMedia);
-        if (rowImg.insertId >= 0) {
-          const { post } = await postService.getPostByID({ id_post })
-          return {
-            post,
-            message: 'Create post success !'
-          }
-        }
-        else {
-          throw new ApiError(httpStatus.BAD_REQUEST, 'An error occurred with medias, please try again later!');
-        }
       }
+      const { post } = await postService.getPostByID({ id_post })
       return {
+        post,
         message: 'Create post success !'
       }
     } else {

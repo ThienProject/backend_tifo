@@ -41,16 +41,19 @@ router.get(
 );
 router.post(
   '/update',
+  isAuth,
   validate(postValidation.getPostByID),
   postController.update
 );
 router.post(
   '/replaceMedias',
+  isAuth,
   upload("medias").array('medias', 12),
   postController.replaceMedias
 );
 router.post(
   '/deleteMedias',
+  isAuth,
   postController.deleteMedias
 );
 

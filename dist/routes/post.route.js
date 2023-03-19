@@ -15,7 +15,7 @@ router.post('/update', auth_middleware_1.isAuth, (0, upload_1.default)("medias")
 router.delete('/delete', auth_middleware_1.isAuth, (0, validate_1.default)(post_validation_1.default.delete), auth_middleware_1.isAuth, post_controller_1.default.delete);
 router.get('/getPosts', (0, validate_1.default)(post_validation_1.default.getPosts), post_controller_1.default.getPosts);
 router.get('/getPostByID', (0, validate_1.default)(post_validation_1.default.getPostByID), post_controller_1.default.getPostByID);
-router.post('/update', (0, validate_1.default)(post_validation_1.default.getPostByID), post_controller_1.default.update);
-router.post('/replaceMedias', (0, upload_1.default)("medias").array('medias', 12), post_controller_1.default.replaceMedias);
-router.post('/deleteMedias', post_controller_1.default.deleteMedias);
+router.post('/update', auth_middleware_1.isAuth, (0, validate_1.default)(post_validation_1.default.getPostByID), post_controller_1.default.update);
+router.post('/replaceMedias', auth_middleware_1.isAuth, (0, upload_1.default)("medias").array('medias', 12), post_controller_1.default.replaceMedias);
+router.post('/deleteMedias', auth_middleware_1.isAuth, post_controller_1.default.deleteMedias);
 exports.default = router;
