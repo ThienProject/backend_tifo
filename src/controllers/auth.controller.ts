@@ -16,6 +16,20 @@ const authController = {
       next(error);
     }
   },
+  getNotifications: async (req: Request, res: Response, next: NextFunction) => {
+    const { id_user } = req.body;
+    try {
+      const { notifications, message } = await authService.getNotifications(id_user);
+      if (notifications) {
+        res.send({
+          notifications, message
+        });
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+  ,
   register: async (req: Request, res: Response, next: NextFunction) => {
     const { email, password, fullname, username } = req.body;
     try {

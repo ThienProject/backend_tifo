@@ -43,9 +43,12 @@ const userService = {
     }),
     getUsers: (paramsBody) => __awaiter(void 0, void 0, void 0, function* () {
         const { q } = paramsBody;
-        const users = yield (0, connectDB_1.default)(`select id_user,	id_role,	fullname,	username,	description,	phone,	email,	address,	birthday,	gender,	avatar,	cover from user where id_user like "%${q}%" or fullname like "%${q}%" or username like "%${q}%"`);
+        const users = yield (0, connectDB_1.default)(`select id_user,	id_role,	fullname,	username,	description,	phone,	email,	address,	birthday,	gender,	avatar,	cover from user where id_user = "${q}" or fullname like "%${q}%" or username like "%${q}%"`);
         if (_.isEmpty(users)) {
-            throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "Can't find out any user account !");
+            return {
+                users,
+                messages: 'No account !'
+            };
         }
         else {
             return {

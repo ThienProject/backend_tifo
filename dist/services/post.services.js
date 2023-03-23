@@ -71,8 +71,10 @@ const postService = {
         const sql = id_user !== ''
             ?
                 `SELECT post.*, user.id_user, user.username, user.avatar, user.fullname, count(love.id_user) as loves,
-        CASE WHEN love.id_user = '${id_user}' THEN true ELSE false END AS isLove
+        CASE WHEN love.id_user = '${id_user}' THEN true ELSE false END AS isLove, 
+        CASE WHEN save.id_user = '${id_user}' THEN true ELSE false END AS isSave
         FROM post
+        LEFT JOIN save ON post.id_post = save.id_post
         LEFT JOIN user ON post.id_user = user.id_user
         LEFT JOIN love ON post.id_post = love.id_post
         LEFT JOIN follow ON follow.id_user = post.id_user AND post.target = 'follower' AND follow.id_follower = '${id_user}' 
@@ -114,11 +116,14 @@ const postService = {
               user.fullname,
               count(love.id_user) as loves
               ${id_user ? `, CASE WHEN love.id_user = '${id_user}' THEN true ELSE false END AS isLove` : ' '} 
-              FROM post, user, love 
+              ${id_user ? `, CASE WHEN save.id_user = '${id_user}' THEN true ELSE false END AS isSave` : ' '} 
+
+              FROM post, user, love, save 
               where 
               post.id_user = user.id_user 
               and post.id_post = '${id_post}' 
-              and love.id_post = post.id_post`;
+              and love.id_post = post.id_post
+              and save.id_post = post.id_post`;
         const rows = yield (0, connectDB_1.default)(sql);
         if (rows.length > 0) {
             const post = rows[0];

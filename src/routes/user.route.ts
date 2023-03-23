@@ -5,7 +5,7 @@ import postValidation from '../validations/post.validation';
 import userValidation from '../validations/user.validations';
 const router = express.Router();
 router.get(
-  '/search',
+  '/gets',
   validate(userValidation.getUsers),
   userController.getUsers
 );
@@ -14,6 +14,8 @@ router.post(
   validate(userValidation.getUser),
   userController.getUser
 );
+
+
 router.get(
   '/getPosts',
   validate(postValidation.getPosts),

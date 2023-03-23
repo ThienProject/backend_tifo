@@ -11,7 +11,7 @@ const userValidation = {
         }),
     },
     getUsers: {
-        body: joi_1.default.object().keys({
+        query: joi_1.default.object().keys({
             q: joi_1.default.string().required(),
         }),
     },

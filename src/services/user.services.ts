@@ -21,14 +21,14 @@ const userService = {
       }
     }
   },
-  getUsers: async (paramsBody: { q: string }) => {
+  getUsers: async (paramsBody: any) => {
     const { q } = paramsBody;
-    const users = await queryDb(`select id_user,	id_role,	fullname,	username,	description,	phone,	email,	address,	birthday,	gender,	avatar,	cover from user where id_user like "%${q}%" or fullname like "%${q}%" or username like "%${q}%"`)
+    const users = await queryDb(`select id_user,	id_role,	fullname,	username,	description,	phone,	email,	address,	birthday,	gender,	avatar,	cover from user where id_user = "${q}" or fullname like "%${q}%" or username like "%${q}%"`)
     if (_.isEmpty(users)) {
-      throw new ApiError(
-        httpStatus.BAD_REQUEST,
-        "Can't find out any user account !"
-      )
+      return {
+        users,
+        messages: 'No account !'
+      }
     }
     else {
       return {

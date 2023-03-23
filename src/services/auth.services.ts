@@ -82,6 +82,22 @@ const authService = {
         message: "Get me success!"
       }
     }
+  },
+  getNotifications: async (id_user: string) => {
+    const notifications: any = await queryDb(`select notification.*, user.fullname, user.avatar , user.username from notification
+    LEFT JOIN user ON notification.id_actor = user.id_user
+    where notification.id_user="${id_user}"`);
+    if (_.isEmpty(notifications))
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "Can't find out user account!"
+      );
+    else {
+      return {
+        notifications,
+        message: "Get notifications success!"
+      }
+    }
   }
 }
 export default authService;

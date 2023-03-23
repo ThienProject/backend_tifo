@@ -8,7 +8,7 @@ const userValidation = {
     }),
   },
   getUsers: {
-    body: Joi.object().keys({
+    query: Joi.object().keys({
       q: Joi.string().required(),
     }),
   },

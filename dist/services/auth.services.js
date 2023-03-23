@@ -88,6 +88,19 @@ const authService = {
                 message: "Get me success!"
             };
         }
+    }),
+    getNotifications: (id_user) => __awaiter(void 0, void 0, void 0, function* () {
+        const notifications = yield (0, connectDB_1.default)(`select notification.*, user.fullname, user.avatar , user.username from notification
+    LEFT JOIN user ON notification.id_actor = user.id_user
+    where notification.id_user="${id_user}"`);
+        if (_.isEmpty(notifications))
+            throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "Can't find out user account!");
+        else {
+            return {
+                notifications,
+                message: "Get notifications success!"
+            };
+        }
     })
 };
 exports.default = authService;

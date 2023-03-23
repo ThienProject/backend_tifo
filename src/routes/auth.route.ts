@@ -22,5 +22,9 @@ router.post(
   authController.getMe
 );
 
+router.post(
+  '/getNotifications',
+  authController.getNotifications
+)
 
 export default router;

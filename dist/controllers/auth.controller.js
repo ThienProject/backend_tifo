@@ -32,6 +32,20 @@ const authController = {
             }
         });
     },
+    getNotifications: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const { id_user } = req.body;
+        try {
+            const { notifications, message } = yield auth_services_1.default.getNotifications(id_user);
+            if (notifications) {
+                res.send({
+                    notifications, message
+                });
+            }
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
     register: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         const { email, password, fullname, username } = req.body;
         try {

@@ -32,7 +32,7 @@ const userController = {
         });
     },
     getUsers: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-        const { q } = req.body;
+        const { q } = req.query;
         try {
             const { users, messages } = yield user_services_1.default.getUsers({ q });
             if (users) {

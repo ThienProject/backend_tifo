@@ -16,7 +16,7 @@ const userController = {
     }
   },
   getUsers: async (req: Request, res: Response, next: NextFunction) => {
-    const { q }: { q: string } = req.body;
+    const { q } = req.query;
     try {
       const { users, messages } = await userService.getUsers({ q });
       if (users) {
