@@ -8,6 +8,7 @@ const user_route_1 = __importDefault(require("./user.route"));
 const auth_route_1 = __importDefault(require("./auth.route"));
 const post_route_1 = __importDefault(require("./post.route"));
 const comment_route_1 = __importDefault(require("./comment.route"));
+const group_route_1 = __importDefault(require("./group.route"));
 const router = express_1.default.Router();
 const defaultRoutes = [
     {
@@ -29,6 +30,10 @@ const defaultRoutes = [
     {
         path: '/comment',
         route: comment_route_1.default,
+    },
+    {
+        path: '/group',
+        route: group_route_1.default,
     },
 ];
 defaultRoutes.forEach((route) => {

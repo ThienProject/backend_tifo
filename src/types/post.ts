@@ -15,6 +15,7 @@ export interface IGetPosts {
   id_user?: string,
   offset?: number,
   limit?: number,
+  type?: string,
 }
 export interface IGetPostByID {
   id_user?: string,

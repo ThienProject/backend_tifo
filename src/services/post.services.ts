@@ -48,7 +48,10 @@ const postService = {
     }
   },
   getPosts: async (query: IGetPosts) => {
-    const { id_user, offset, limit } = query;
+    let { id_user, offset, limit, type } = query;
+    if (!type) {
+      type = 'post'
+    }
     const sql = id_user !== ''
       ?
       `SELECT post.*, user.id_user, user.username, user.avatar, user.fullname, count(love.id_user) as loves,
@@ -60,17 +63,17 @@ const postService = {
         LEFT JOIN love ON post.id_post = love.id_post
         LEFT JOIN follow ON follow.id_user = post.id_user AND post.target = 'follower' AND follow.id_follower = '${id_user}' 
                           OR post.target = 'public'
-        WHERE post.type = 'post'
+        WHERE post.type = '${type}'
         GROUP BY post.id_post, user.id_user
         ORDER BY post.date_time DESC
         LIMIT ${limit} OFFSET ${offset};`
-        
+
       :
       `SELECT post.*, user.username, user.fullname, user.avatar, COUNT(love.id_user) AS loves 
         FROM post 
         LEFT JOIN user ON post.id_user = user.id_user 
         LEFT JOIN love ON love.id_post = post.id_post 
-        WHERE post.target = 'public' AND post.type = 'post'
+        WHERE post.target = 'public' AND post.type = '${type}'
         GROUP BY post.id_post, user.id_user
         ORDER BY post.date_time DESC
         LIMIT ${limit} OFFSET ${offset};`;
