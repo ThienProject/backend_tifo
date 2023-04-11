@@ -4,16 +4,19 @@ import { generateToken } from '../middleware/auth/JWT';
 import httpStatus from 'http-status';
 import ApiError from '../utils/ApiError';
 import { send } from 'process';
-import { IGetGroups } from '../types/message';
+import { IGetChatsByIDGroup, IGetGroups } from '../types/message';
+import { io } from '..';
 
 const messageController = {
   getChatsByIDGroup: async (req: Request, res: Response, next: NextFunction) => {
-    const query: IGetGroups = req.query;
+    const query: IGetChatsByIDGroup = req.query;
+    const id_group = query.id_group;
     try {
       const { chats, message } = await messageServices.getChatsByIDGroup(query);
       if (chats) {
         return res.status(httpStatus.OK).send({
           chats: chats,
+          id_group,
           message: message
         })
       }
@@ -32,6 +35,30 @@ const messageController = {
           message: message
         })
       }
+    } catch (error) {
+      next(error);
+    }
+  },
+  createChat: async (req: Request, res: Response, next: NextFunction) => {
+    const {
+      id_user,
+      id_group,
+      message
+    } = req.body;
+    try {
+      const { chat, date } = await messageServices.createChat({
+        id_user,
+        id_group,
+        message
+      })
+      const newChat = {
+        chat,
+        id_user,
+        date,
+        id_group,
+      }
+      io.emit("new-chat", newChat);
+      return res.status(httpStatus.CREATED).send(newChat);
     } catch (error) {
       next(error);
     }

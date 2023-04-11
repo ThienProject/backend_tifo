@@ -20,6 +20,7 @@ const config = {
         user: 'root',
         password: '',
         database: 'tifo',
+        multipleStatements: true
     },
     listPerPage: 10,
 };
