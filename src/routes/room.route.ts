@@ -2,15 +2,22 @@ import express from 'express';
 import messageController from '../controllers/message.controller'
 import { isAuth } from '../middleware/auth/auth.middleware';
 import validate from '../middleware/validate';
-import authValidation from '../validations/auth.validations';
+import roomValidation from '../validations/room.validation';
 const router = express.Router();
 router.get(
-  '/getChatsByIDGroup',
-  messageController.getChatsByIDGroup
+  '/getChatsByIDRoom',
+  isAuth,
+  messageController.getChatsByIDRoom
 );
 router.get(
   '/gets',
-  messageController.getGroups
+  // isAuth,
+  messageController.getRooms
 );
-
+router.get(
+  '/search',
+  isAuth,
+  validate(roomValidation.searchRoomOrUser),
+  messageController.searchRoomOrUser
+)
 export default router;

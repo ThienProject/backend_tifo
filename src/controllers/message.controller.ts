@@ -1,22 +1,22 @@
 import { Request, Response, NextFunction } from 'express'
 import messageServices from '../services/message.services';
-import { generateToken } from '../middleware/auth/JWT';
+
 import httpStatus from 'http-status';
-import ApiError from '../utils/ApiError';
-import { send } from 'process';
-import { IGetChatsByIDGroup, IGetGroups } from '../types/message';
+
+import { IGetChatsByIDRoom, IGetRooms } from '../types/message';
 import { io } from '..';
+import { IPayloadSearchRoom } from '../types/message';
 
 const messageController = {
-  getChatsByIDGroup: async (req: Request, res: Response, next: NextFunction) => {
-    const query: IGetChatsByIDGroup = req.query;
-    const id_group = query.id_group;
+  getChatsByIDRoom: async (req: Request, res: Response, next: NextFunction) => {
+    const query: IGetChatsByIDRoom = req.query;
+    const id_room = query.id_room;
     try {
-      const { chats, message } = await messageServices.getChatsByIDGroup(query);
+      const { chats, message } = await messageServices.getChatsByIDRoom(query);
       if (chats) {
         return res.status(httpStatus.OK).send({
           chats: chats,
-          id_group,
+          id_room,
           message: message
         })
       }
@@ -24,14 +24,14 @@ const messageController = {
       next(error);
     }
   },
-  getGroups: async (req: Request, res: Response, next: NextFunction) => {
-    const query: IGetGroups = req.query;
+  getRooms: async (req: Request, res: Response, next: NextFunction) => {
+    const query: IGetRooms = req.query;
     console.log(query)
     try {
-      const { groups, message } = await messageServices.getGroups(query);
-      if (groups) {
+      const { rooms, message } = await messageServices.getRooms(query);
+      if (rooms) {
         return res.status(httpStatus.OK).send({
-          groups: groups,
+          rooms: rooms,
           message: message
         })
       }
@@ -39,25 +39,88 @@ const messageController = {
       next(error);
     }
   },
+  searchRoomOrUser: async (req: Request, res: Response, next: NextFunction) => {
+    const query: IPayloadSearchRoom = req.query;
+    console.log(query);
+    try {
+      const { users, message } = await messageServices.searchRoomOrUser(query);
+      if (users) {
+        return res.status(httpStatus.OK).send({
+          users,
+          message
+        })
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+  ,
   createChat: async (req: Request, res: Response, next: NextFunction) => {
     const {
       id_user,
-      id_group,
+      id_room,
+      id_friend,
       message
     } = req.body;
     try {
       const { chat, date } = await messageServices.createChat({
         id_user,
-        id_group,
+        id_room,
+        message,
+        id_friend
+      })
+      const newChat = {
+        chat,
+        id_user,
+        date,
+        id_room
+      }
+      io.emit("new-chat", newChat);
+      return res.status(httpStatus.CREATED).send({ chat });
+    } catch (error) {
+      next(error);
+    }
+  },
+  createFirstChat: async (req: Request, res: Response, next: NextFunction) => {
+    const {
+      id_user,
+      id_friend,
+      message
+    } = req.body;
+    try {
+      const result = await messageServices.createFirstChat({
+        id_user,
+        message,
+        id_friend
+      })
+      const newChat = {
+        ...result
+      }
+      console.log(newChat);
+      io.emit("first-chat", newChat);
+      return res.status(httpStatus.CREATED).send({ message: 'ok', id_room: result.id_room });
+    } catch (error) {
+      next(error);
+    }
+  },
+  createChatGPT: async (req: Request, res: Response, next: NextFunction) => {
+    const {
+      id_user,
+      id_room,
+      message
+    } = req.body;
+    try {
+      const { chat, date } = await messageServices.createChatGPT({
+        id_user,
+        id_room,
         message
       })
       const newChat = {
         chat,
         id_user,
         date,
-        id_group,
+        id_room,
       }
-      io.emit("new-chat", newChat);
       return res.status(httpStatus.CREATED).send(newChat);
     } catch (error) {
       next(error);

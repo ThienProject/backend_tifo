@@ -18,12 +18,13 @@ export const isAuth = async (req: Request, res: Response, next: NextFunction) =>
 			const verifiedRefreshToken = refreshToken && validateRefreshToken(refreshToken);
 			console.log("verifiedRefreshToken", verifiedRefreshToken);
 			if (!verifiedRefreshToken) {
+				console.log("....................................")
 				next();
 				// return  res.status(401).send();
 			}
 		}
 		return next();
 	} catch (error) {
-		next(new ApiError(httpStatus.BAD_GATEWAY, 'Login timeout. Please login again !'));
+		next(new ApiError(httpStatus.UNAUTHORIZED, 'Login timeout. Please login again !'));
 	}
 };

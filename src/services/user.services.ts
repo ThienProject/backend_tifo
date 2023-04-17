@@ -22,8 +22,14 @@ const userService = {
     }
   },
   getUsers: async (paramsBody: any) => {
-    const { q } = paramsBody;
-    const users = await queryDb(`select id_user,	id_role,	fullname,	username,	description,	phone,	email,	address,	birthday,	gender,	avatar,	cover from user where id_user = "${q}" or fullname like "%${q}%" or username like "%${q}%"`)
+    const { q, offset, limit, id_user } = paramsBody;
+    const users = await queryDb(`
+      select id_user,	id_role,	fullname,	username,	description,	phone,	email,	address,	birthday,	gender,	avatar,	cover from user 
+      where id_user <> '${id_user}' and (id_user = "${q}" or fullname like "%${q}%" or username like "%${q}%")
+      order by fullname desc
+      limit ${limit} offset ${offset}
+      `
+    )
     if (_.isEmpty(users)) {
       return {
         users,

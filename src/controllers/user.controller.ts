@@ -16,9 +16,9 @@ const userController = {
     }
   },
   getUsers: async (req: Request, res: Response, next: NextFunction) => {
-    const { q } = req.query;
+    const { q, offset, limit, id_user } = req.query;
     try {
-      const { users, messages } = await userService.getUsers({ q });
+      const { users, messages } = await userService.getUsers({ q, offset, limit, id_user });
       if (users) {
         res.send({
           users, messages

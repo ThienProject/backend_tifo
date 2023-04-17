@@ -32,9 +32,9 @@ const userController = {
         });
     },
     getUsers: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-        const { q } = req.query;
+        const { q, offset, limit, id_user } = req.query;
         try {
-            const { users, messages } = yield user_services_1.default.getUsers({ q });
+            const { users, messages } = yield user_services_1.default.getUsers({ q, offset, limit, id_user });
             if (users) {
                 res.send({
                     users, messages

@@ -3,7 +3,7 @@ import userRoute from './user.route'
 import authRoute from './auth.route'
 import postRoute from './post.route'
 import commentRoute from './comment.route'
-import groupRoute from './group.route'
+import roomRoute from './room.route'
 import chatRoute from './chat.route'
 const router = express.Router();
 const defaultRoutes = [
@@ -28,8 +28,8 @@ const defaultRoutes = [
     route: commentRoute,
   },
   {
-    path: '/group',
-    route: groupRoute,
+    path: '/room',
+    route: roomRoute,
   },
   {
     path: '/chat',

@@ -8,6 +8,13 @@ router.post(
   '/create',
   messageController.createChat
 );
-
+router.post(
+  '/createFirst',
+  messageController.createFirstChat
+);
+router.post(
+  '/gpt/create',
+  messageController.createChatGPT
+);
 
 export default router;

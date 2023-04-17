@@ -9,7 +9,10 @@ const userValidation = {
   },
   getUsers: {
     query: Joi.object().keys({
+      id_user: Joi.string().allow(null),
       q: Joi.string().required(),
+      limit: Joi.number().required(),
+      offset: Joi.number().required(),
     }),
   },
 

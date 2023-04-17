@@ -9,16 +9,18 @@ const config = {
     user: 'root',
     password: '',
     database: 'tifo',
-    multipleStatements: true
+    connectionLimit: 10,
+    waitForConnections: true
   },
-  listPerPage: 10,
 };
-const connection = mysql.createConnection(config.db);
+const pool = mysql.createPool(config.db);
 async function queryDb(query: any) {
-  if (connection) {
-    const [results] = await (await connection).execute<RowDataPacket[]>(query);
-    return results;
-
+  const connection = await pool.getConnection();
+  try {
+    const [rows] = await connection.query<RowDataPacket[]>(query);
+    return rows;
+  } finally {
+    connection.release();
   }
 }
 

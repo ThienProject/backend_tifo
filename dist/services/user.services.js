@@ -42,8 +42,13 @@ const userService = {
         }
     }),
     getUsers: (paramsBody) => __awaiter(void 0, void 0, void 0, function* () {
-        const { q } = paramsBody;
-        const users = yield (0, connectDB_1.default)(`select id_user,	id_role,	fullname,	username,	description,	phone,	email,	address,	birthday,	gender,	avatar,	cover from user where id_user = "${q}" or fullname like "%${q}%" or username like "%${q}%"`);
+        const { q, offset, limit, id_user } = paramsBody;
+        const users = yield (0, connectDB_1.default)(`
+      select id_user,	id_role,	fullname,	username,	description,	phone,	email,	address,	birthday,	gender,	avatar,	cover from user 
+      where id_user <> '${id_user}' and (id_user = "${q}" or fullname like "%${q}%" or username like "%${q}%")
+      order by fullname desc
+      limit ${limit} offset ${offset}
+      `);
         if (_.isEmpty(users)) {
             return {
                 users,

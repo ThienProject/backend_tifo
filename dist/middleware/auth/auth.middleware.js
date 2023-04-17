@@ -33,6 +33,7 @@ const isAuth = (req, res, next) => __awaiter(void 0, void 0, void 0, function* (
             const verifiedRefreshToken = refreshToken && (0, JWT_1.validateRefreshToken)(refreshToken);
             console.log("verifiedRefreshToken", verifiedRefreshToken);
             if (!verifiedRefreshToken) {
+                console.log("....................................");
                 next();
                 // return  res.status(401).send();
             }
@@ -40,7 +41,7 @@ const isAuth = (req, res, next) => __awaiter(void 0, void 0, void 0, function* (
         return next();
     }
     catch (error) {
-        next(new ApiError_1.default(http_status_1.default.BAD_GATEWAY, 'Login timeout. Please login again !'));
+        next(new ApiError_1.default(http_status_1.default.UNAUTHORIZED, 'Login timeout. Please login again !'));
     }
 });
 exports.isAuth = isAuth;

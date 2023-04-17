@@ -20,16 +20,20 @@ const config = {
         user: 'root',
         password: '',
         database: 'tifo',
-        multipleStatements: true
+        connectionLimit: 10,
+        waitForConnections: true
     },
-    listPerPage: 10,
 };
-const connection = promise_1.default.createConnection(config.db);
+const pool = promise_1.default.createPool(config.db);
 function queryDb(query) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (connection) {
-            const [results] = yield (yield connection).execute(query);
-            return results;
+        const connection = yield pool.getConnection();
+        try {
+            const [rows] = yield connection.query(query);
+            return rows;
+        }
+        finally {
+            connection.release();
         }
     });
 }
