@@ -1,5 +1,5 @@
 import mysql from 'mysql2/promise';
-import { RowDataPacket, createPool } from 'mysql2';
+import { RowDataPacket } from 'mysql2';
 
 // // create the connection to database
 

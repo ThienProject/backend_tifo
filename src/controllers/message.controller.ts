@@ -60,23 +60,42 @@ const messageController = {
       id_user,
       id_room,
       id_friend,
+      isChatbot,
       message
     } = req.body;
     try {
-      const { chat, date } = await messageServices.createChat({
-        id_user,
-        id_room,
-        message,
-        id_friend
-      })
-      const newChat = {
-        chat,
-        id_user,
-        date,
-        id_room
+      if (!isChatbot) {
+        const { chat, date } = await messageServices.createChat({
+          id_user,
+          id_room,
+          message,
+          id_friend
+        })
+        const newChat = {
+          chat,
+          id_user,
+          date,
+          id_room
+        }
+        io.emit("new-chat", newChat);
+        return res.status(httpStatus.CREATED).send({ chat });
       }
-      io.emit("new-chat", newChat);
-      return res.status(httpStatus.CREATED).send({ chat });
+      else {
+        const { chat, date } = await messageServices.createChatGPT({
+          id_user,
+          id_room,
+          message
+        })
+        const newChat = {
+          chat,
+          id_user,
+          date,
+          id_room,
+          isChatbot
+        }
+        return res.status(httpStatus.CREATED).send(newChat);
+      }
+
     } catch (error) {
       next(error);
     }
@@ -99,29 +118,6 @@ const messageController = {
       console.log(newChat);
       io.emit("first-chat", newChat);
       return res.status(httpStatus.CREATED).send({ message: 'ok', id_room: result.id_room });
-    } catch (error) {
-      next(error);
-    }
-  },
-  createChatGPT: async (req: Request, res: Response, next: NextFunction) => {
-    const {
-      id_user,
-      id_room,
-      message
-    } = req.body;
-    try {
-      const { chat, date } = await messageServices.createChatGPT({
-        id_user,
-        id_room,
-        message
-      })
-      const newChat = {
-        chat,
-        id_user,
-        date,
-        id_room,
-      }
-      return res.status(httpStatus.CREATED).send(newChat);
     } catch (error) {
       next(error);
     }

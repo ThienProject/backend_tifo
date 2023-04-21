@@ -16,7 +16,9 @@ const uniqid_1 = __importDefault(require("uniqid"));
 const connectDB_1 = __importDefault(require("../configs/connectDB"));
 const ApiError_1 = __importDefault(require("../utils/ApiError"));
 const http_status_1 = __importDefault(require("http-status"));
+const connectGPT_1 = require("../configs/connectGPT");
 var _ = require('lodash');
+const idChatbot = 'USER_3FSERABRKLGGAEPGS';
 const messageService = {
     createRoom: (id_user, id_friend, firstMessage, type) => __awaiter(void 0, void 0, void 0, function* () {
         console.log("có zô");
@@ -44,8 +46,15 @@ const messageService = {
     }),
     getRooms: (query) => __awaiter(void 0, void 0, void 0, function* () {
         let { id_user: id_me, offset, limit } = query;
-        const checkRoom = yield (0, connectDB_1.default)(`select user_room.* from user_room where user_room.id_user = '${id_me}'  `);
-        if (checkRoom.length <= 0) {
+        const roomChatbot = yield (0, connectDB_1.default)(`
+                            SELECT room.*
+                            FROM user_room
+                            INNER JOIN room ON user_room.id_room = room.id_room
+                            WHERE user_room.id_user = '${id_me}' AND room.id_room IN (
+                                SELECT id_room 
+                                FROM user_room 
+                                WHERE id_user = '${idChatbot}' )`);
+        if (roomChatbot.length <= 0) {
             const roomChatBot = yield messageService.createRoom(id_me, undefined, undefined, 'chatbot');
             if (roomChatBot.insertId < 0) {
                 throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "rooms does not exist !");
@@ -91,7 +100,7 @@ const messageService = {
                     const year = currentDate.getFullYear();
                     const month = currentDate.getMonth() + 1;
                     const day = currentDate.getDate();
-                    const date = `${year}-${month}-${day}`;
+                    const date = `${year}-${month.toString().padStart(2, '0')}-${day}`;
                     chat = { [date]: [{ username, fullname, avatar, id_user, id_chat, message, datetime }] };
                 }
                 if (index === -1) {
@@ -137,12 +146,11 @@ const messageService = {
         const chats = rows.reverse();
         if (chats.length > 0) {
             const newChats = chats.reduce((previousValue, currentValue) => {
-                // const date = currentValue.datetime.toString().substring(0, 10);
                 const currentDate = currentValue.datetime;
                 const year = currentDate.getFullYear();
                 const month = currentDate.getMonth() + 1;
                 const day = currentDate.getDate();
-                const date = `${year}-${month}-${day}`;
+                const date = `${year}-${month.toString().padStart(2, '0')}-${day}`;
                 const index = previousValue.findIndex((item) => Object.keys(item)[0] === date);
                 if (index === -1) {
                     previousValue.push({
@@ -191,7 +199,7 @@ const messageService = {
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth() + 1;
             const day = currentDate.getDate();
-            const date = `${year}-${month}-${day}`;
+            const date = `${year}-${month.toString().padStart(2, '0')}-${day}`;
             return {
                 chat: Object.assign(Object.assign({}, newChat), { id_user: id_me, message }),
                 date,
@@ -225,7 +233,7 @@ const messageService = {
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth() + 1;
             const day = currentDate.getDate();
-            const date = `${year}-${month}-${day}`;
+            const date = `${year}-${month.toString().padStart(2, '0')}-${day}`;
             const id_room = newChat.id_room;
             const avatar = newChat.avatar_room;
             const name = newChat.name;
@@ -280,6 +288,69 @@ LIMIT ${limit} OFFSET ${offset}
         }
         catch (error) {
             throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, error ? error.toString() : 'error');
+        }
+    }),
+    createChatGPT: (body) => __awaiter(void 0, void 0, void 0, function* () {
+        const idGPT = 'USER_3FSERABRKLGGAEPGS';
+        const { id_user: id_me, id_room, message, } = body;
+        let chat = null;
+        let responseGPT = '';
+        try {
+            const getQuestionOld = yield (0, connectDB_1.default)(`SELECT 
+                  chat.message, chat.id_user_room from 
+                  (SELECT id_user_room FROM user_room
+                  WHERE id_room = '${id_room}') as roomNew , chat 
+                  where chat.id_user_room = roomNew.id_user_room 
+                  order by chat.datetime desc
+                  limit 10 `);
+            let contextMess = [];
+            getQuestionOld.forEach((element, index) => {
+                if (index % 2 === 0) {
+                    contextMess.push({ "role": "user", "content": element.message });
+                }
+                else {
+                    contextMess.push({ "role": "chatbot", "content": element.message });
+                }
+            });
+            contextMess.push({ "role": "user", "content": message });
+            responseGPT = yield (0, connectGPT_1.sendMessage)(contextMess);
+        }
+        catch (error) {
+            throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, error);
+        }
+        if (id_room && responseGPT) {
+            const sql = `INSERT INTO chat (id_user_room, message)
+                  VALUES ((SELECT id_user_room FROM user_room
+                  WHERE id_room = '${id_room}' AND id_user = '${idGPT}'), "${responseGPT}"), ((SELECT id_user_room FROM user_room 
+                  WHERE id_room = '${id_room}' AND id_user = '${id_me}'), "${message}")
+                  ;
+                  `;
+            chat = yield (0, connectDB_1.default)(sql);
+        }
+        if (chat && chat.insertId >= 0) {
+            const getChatRecent = yield (0, connectDB_1.default)(`
+                  SELECT chat.id_chat, chat.message, chat.datetime, user_room.id_room, room.avatar as avatar_room, room.type, room.name,
+                  user.fullname, user.username, user.avatar 
+                  FROM chat 
+                  JOIN user_room ON chat.id_user_room = user_room.id_user_room
+                  LEFT JOIN room ON user_room.id_room = room.id_room
+                  LEFT JOIN  user ON user.id_user = user_room.id_user
+                  WHERE chat.id_chat = LAST_INSERT_ID();`);
+            const newChat = getChatRecent[0];
+            const currentDate = newChat.datetime;
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth() + 1;
+            const day = currentDate.getDate();
+            const date = `${year}-${month.toString().padStart(2, '0')}-${day}`;
+            return {
+                chat: Object.assign(Object.assign({}, newChat), { id_user: idGPT }),
+                date,
+                id_room,
+                message: 'gpt chat response success !'
+            };
+        }
+        else {
+            throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'create chat failed, please try again later!');
         }
     }),
 };

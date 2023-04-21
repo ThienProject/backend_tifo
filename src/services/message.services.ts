@@ -4,9 +4,11 @@ import ApiError from '../utils/ApiError';
 import httpStatus from 'http-status';
 import { IChat, IGetChatsByIDRoom, IGetRooms, IPayloadSearchRoom } from '../types/message';
 import { create } from 'domain';
+import { TContext, sendMessage } from '../configs/connectGPT';
 
 
 var _ = require('lodash');
+const idChatbot = 'USER_3FSERABRKLGGAEPGS'
 const messageService = {
   createRoom: async (id_user: string, id_friend?: string, firstMessage?: string, type?: string) => {
     console.log("có zô")
@@ -31,8 +33,15 @@ const messageService = {
   },
   getRooms: async (query: IGetRooms) => {
     let { id_user: id_me, offset, limit } = query;
-    const checkRoom = await queryDb(`select user_room.* from user_room where user_room.id_user = '${id_me}'  `);
-    if (checkRoom.length <= 0) {
+    const roomChatbot = await queryDb(`
+                            SELECT room.*
+                            FROM user_room
+                            INNER JOIN room ON user_room.id_room = room.id_room
+                            WHERE user_room.id_user = '${id_me}' AND room.id_room IN (
+                                SELECT id_room 
+                                FROM user_room 
+                                WHERE id_user = '${idChatbot}' )`);
+    if (roomChatbot.length <= 0) {
       const roomChatBot: any = await messageService.createRoom(id_me!, undefined, undefined, 'chatbot');
       if (roomChatBot.insertId < 0) {
         throw new ApiError(httpStatus.BAD_REQUEST, "rooms does not exist !");
@@ -79,7 +88,7 @@ const messageService = {
           const year = currentDate.getFullYear();
           const month = currentDate.getMonth() + 1;
           const day = currentDate.getDate();
-          const date = `${year}-${month}-${day}`;
+          const date = `${year}-${month.toString().padStart(2, '0')}-${day}`;
           chat = { [date]: [{ username, fullname, avatar, id_user, id_chat, message, datetime }] };
         }
         if (index === -1) {
@@ -122,12 +131,11 @@ const messageService = {
     const chats: any[] = rows.reverse();
     if (chats.length > 0) {
       const newChats = chats.reduce((previousValue, currentValue) => {
-        // const date = currentValue.datetime.toString().substring(0, 10);
         const currentDate = currentValue.datetime;
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth() + 1;
         const day = currentDate.getDate();
-        const date = `${year}-${month}-${day}`;
+        const date = `${year}-${month.toString().padStart(2, '0')}-${day}`;
         const index = previousValue.findIndex((item: any) => Object.keys(item)[0] === date);
         if (index === -1) {
           previousValue.push({
@@ -182,7 +190,7 @@ const messageService = {
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth() + 1;
       const day = currentDate.getDate();
-      const date = `${year}-${month}-${day}`;
+      const date = `${year}-${month.toString().padStart(2, '0')}-${day}`;
       return {
         chat: {
           ...newChat,
@@ -225,7 +233,7 @@ const messageService = {
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth() + 1;
       const day = currentDate.getDate();
-      const date = `${year}-${month}-${day}`;
+      const date = `${year}-${month.toString().padStart(2, '0')}-${day}`;
       const id_room = newChat.id_room;
       const avatar = newChat.avatar_room;
       const name = newChat.name;
@@ -284,6 +292,75 @@ LIMIT ${limit} OFFSET ${offset}
       throw new ApiError(httpStatus.BAD_REQUEST, error ? error.toString() : 'error');
     }
 
+  },
+  createChatGPT: async (body: IChat) => {
+    const idGPT = 'USER_3FSERABRKLGGAEPGS';
+    const {
+      id_user: id_me,
+      id_room,
+      message,
+    } = body
+    let chat: any | null = null;
+    let responseGPT = ''
+    try {
+      const getQuestionOld = await queryDb(`SELECT 
+                  chat.message, chat.id_user_room from 
+                  (SELECT id_user_room FROM user_room
+                  WHERE id_room = '${id_room}') as roomNew , chat 
+                  where chat.id_user_room = roomNew.id_user_room 
+                  order by chat.datetime desc
+                  limit 10 `);
+
+      let contextMess: TContext = [];
+      getQuestionOld.forEach((element, index) => {
+        if (index % 2 === 0) {
+          contextMess.push({ "role": "user", "content": element.message })
+        }
+        else {
+          contextMess.push({ "role": "chatbot", "content": element.message })
+        }
+      });
+      contextMess.push({ "role": "user", "content": message! })
+      responseGPT = await sendMessage(contextMess);
+    } catch (error: any) {
+      throw new ApiError(httpStatus.BAD_REQUEST, error);
+    }
+    if (id_room && responseGPT) {
+      const sql = `INSERT INTO chat (id_user_room, message)
+                  VALUES ((SELECT id_user_room FROM user_room
+                  WHERE id_room = '${id_room}' AND id_user = '${idGPT}'), "${responseGPT}"), ((SELECT id_user_room FROM user_room 
+                  WHERE id_room = '${id_room}' AND id_user = '${id_me}'), "${message}")
+                  ;
+                  `;
+      chat = await queryDb(sql);
+    }
+    if (chat && chat.insertId >= 0) {
+      const getChatRecent: any = await queryDb(`
+                  SELECT chat.id_chat, chat.message, chat.datetime, user_room.id_room, room.avatar as avatar_room, room.type, room.name,
+                  user.fullname, user.username, user.avatar 
+                  FROM chat 
+                  JOIN user_room ON chat.id_user_room = user_room.id_user_room
+                  LEFT JOIN room ON user_room.id_room = room.id_room
+                  LEFT JOIN  user ON user.id_user = user_room.id_user
+                  WHERE chat.id_chat = LAST_INSERT_ID();`)
+      const newChat = getChatRecent[0];
+      const currentDate = newChat.datetime;
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth() + 1;
+      const day = currentDate.getDate();
+      const date = `${year}-${month.toString().padStart(2, '0')}-${day}`;
+      return {
+        chat: {
+          ...newChat,
+          id_user: idGPT,
+        },
+        date,
+        id_room,
+        message: 'gpt chat response success !'
+      }
+    } else {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'create chat failed, please try again later!');
+    }
   },
 }
 

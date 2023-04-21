@@ -1,20 +1,16 @@
 import express from 'express';
 import messageController from '../controllers/message.controller'
 import { isAuth } from '../middleware/auth/auth.middleware';
-import validate from '../middleware/validate';
-import authValidation from '../validations/auth.validations';
 const router = express.Router();
 router.post(
   '/create',
+  isAuth,
   messageController.createChat
 );
 router.post(
   '/createFirst',
+  isAuth,
   messageController.createFirstChat
-);
-router.post(
-  '/gpt/create',
-  messageController.createChatGPT
 );
 
 export default router;

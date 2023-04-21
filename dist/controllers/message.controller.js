@@ -66,22 +66,39 @@ const messageController = {
         }
     }),
     createChat: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-        const { id_user, id_room, id_friend, message } = req.body;
+        const { id_user, id_room, id_friend, isChatbot, message } = req.body;
         try {
-            const { chat, date } = yield message_services_1.default.createChat({
-                id_user,
-                id_room,
-                message,
-                id_friend
-            });
-            const newChat = {
-                chat,
-                id_user,
-                date,
-                id_room
-            };
-            __1.io.emit("new-chat", newChat);
-            return res.status(http_status_1.default.CREATED).send({ chat });
+            if (!isChatbot) {
+                const { chat, date } = yield message_services_1.default.createChat({
+                    id_user,
+                    id_room,
+                    message,
+                    id_friend
+                });
+                const newChat = {
+                    chat,
+                    id_user,
+                    date,
+                    id_room
+                };
+                __1.io.emit("new-chat", newChat);
+                return res.status(http_status_1.default.CREATED).send({ chat });
+            }
+            else {
+                const { chat, date } = yield message_services_1.default.createChatGPT({
+                    id_user,
+                    id_room,
+                    message
+                });
+                const newChat = {
+                    chat,
+                    id_user,
+                    date,
+                    id_room,
+                    isChatbot
+                };
+                return res.status(http_status_1.default.CREATED).send(newChat);
+            }
         }
         catch (error) {
             next(error);
@@ -99,26 +116,6 @@ const messageController = {
             console.log(newChat);
             __1.io.emit("first-chat", newChat);
             return res.status(http_status_1.default.CREATED).send({ message: 'ok', id_room: result.id_room });
-        }
-        catch (error) {
-            next(error);
-        }
-    }),
-    createChatGPT: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-        const { id_user, id_room, message } = req.body;
-        try {
-            const { chat, date } = yield message_services_1.default.createChatGPT({
-                id_user,
-                id_room,
-                message
-            });
-            const newChat = {
-                chat,
-                id_user,
-                date,
-                id_room,
-            };
-            return res.status(http_status_1.default.CREATED).send(newChat);
         }
         catch (error) {
             next(error);
