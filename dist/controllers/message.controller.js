@@ -18,6 +18,7 @@ const __1 = require("..");
 const messageController = {
     getChatsByIDRoom: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         const query = req.query;
+        console.log(query);
         const id_room = query.id_room;
         try {
             const { chats, message } = yield message_services_1.default.getChatsByIDRoom(query);
@@ -35,7 +36,6 @@ const messageController = {
     }),
     getRooms: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         const query = req.query;
-        console.log(query);
         try {
             const { rooms, message } = yield message_services_1.default.getRooms(query);
             if (rooms) {
@@ -51,7 +51,6 @@ const messageController = {
     }),
     searchRoomOrUser: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         const query = req.query;
-        console.log(query);
         try {
             const { users, message } = yield message_services_1.default.searchRoomOrUser(query);
             if (users) {
@@ -104,6 +103,19 @@ const messageController = {
             next(error);
         }
     }),
+    deleteChats: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const { id_user, id_room } = req.body;
+        try {
+            const { message } = yield message_services_1.default.deleteChats({
+                id_user,
+                id_room
+            });
+            return res.status(http_status_1.default.CREATED).send(message);
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
     createFirstChat: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         const { id_user, id_friend, message } = req.body;
         try {
@@ -113,7 +125,6 @@ const messageController = {
                 id_friend
             });
             const newChat = Object.assign({}, result);
-            console.log(newChat);
             __1.io.emit("first-chat", newChat);
             return res.status(http_status_1.default.CREATED).send({ message: 'ok', id_room: result.id_room });
         }

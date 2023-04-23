@@ -21,3 +21,7 @@ export interface IPayloadSearchRoom {
   limit?: number;
   offset?: number;
 }
+export interface IPayloadDleChats {
+  id_user?: string;
+  id_room?: string;
+}

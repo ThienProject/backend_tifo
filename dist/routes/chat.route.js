@@ -9,4 +9,5 @@ const auth_middleware_1 = require("../middleware/auth/auth.middleware");
 const router = express_1.default.Router();
 router.post('/create', auth_middleware_1.isAuth, message_controller_1.default.createChat);
 router.post('/createFirst', auth_middleware_1.isAuth, message_controller_1.default.createFirstChat);
+router.post('/deletes', auth_middleware_1.isAuth, message_controller_1.default.deleteChats);
 exports.default = router;

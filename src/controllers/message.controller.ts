@@ -10,6 +10,7 @@ import { IPayloadSearchRoom } from '../types/message';
 const messageController = {
   getChatsByIDRoom: async (req: Request, res: Response, next: NextFunction) => {
     const query: IGetChatsByIDRoom = req.query;
+    console.log(query)
     const id_room = query.id_room;
     try {
       const { chats, message } = await messageServices.getChatsByIDRoom(query);
@@ -26,7 +27,7 @@ const messageController = {
   },
   getRooms: async (req: Request, res: Response, next: NextFunction) => {
     const query: IGetRooms = req.query;
-    console.log(query)
+
     try {
       const { rooms, message } = await messageServices.getRooms(query);
       if (rooms) {
@@ -41,7 +42,7 @@ const messageController = {
   },
   searchRoomOrUser: async (req: Request, res: Response, next: NextFunction) => {
     const query: IPayloadSearchRoom = req.query;
-    console.log(query);
+
     try {
       const { users, message } = await messageServices.searchRoomOrUser(query);
       if (users) {
@@ -100,6 +101,21 @@ const messageController = {
       next(error);
     }
   },
+  deleteChats: async (req: Request, res: Response, next: NextFunction) => {
+    const {
+      id_user,
+      id_room
+    } = req.body;
+    try {
+      const { message } = await messageServices.deleteChats({
+        id_user,
+        id_room
+      })
+      return res.status(httpStatus.CREATED).send(message);
+    } catch (error) {
+      next(error);
+    }
+  },
   createFirstChat: async (req: Request, res: Response, next: NextFunction) => {
     const {
       id_user,
@@ -115,7 +131,6 @@ const messageController = {
       const newChat = {
         ...result
       }
-      console.log(newChat);
       io.emit("first-chat", newChat);
       return res.status(httpStatus.CREATED).send({ message: 'ok', id_room: result.id_room });
     } catch (error) {

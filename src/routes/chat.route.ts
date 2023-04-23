@@ -12,5 +12,11 @@ router.post(
   isAuth,
   messageController.createFirstChat
 );
+router.post(
+  '/deletes',
+  isAuth,
+  messageController.deleteChats
+);
+
 
 export default router;
