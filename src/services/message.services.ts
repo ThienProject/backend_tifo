@@ -305,23 +305,25 @@ const messageService = {
   searchRoomOrUser: async (paramsBody: IPayloadSearchRoom) => {
     const { q, id_user, limit, offset } = paramsBody;
     try {
-      const users = await queryDb(`
-            (SELECT user.id_user, user.fullname, user.username, user.avatar, room.id_room,room.name,  room.avatar as room_avatar, room.type 
-FROM user 
-LEFT JOIN user_room ON user.id_user = user_room.id_user 
-Right JOIN room ON room.id_room = user_room.id_room AND (room.type = 'friend' or room.type = 'chatbot')
-and user_room.id_room in (SELECT user_room.id_room from user_room  WHERE user_room.id_user ="${id_user}")
-WHERE user.id_user <> "${id_user}" and (user.id_user = "${q}" or fullname like "%${q}%" or username like "%${q}%")
-GROUP by user.id_user
-ORDER BY user.fullname DESC) UNION (select  '', '','','' , room.id_room, room.name,  room.avatar, room.type 
-                                 from room 
+      const sql = `
+            (SELECT user.id_user, user.fullname, user.username, user.avatar, room.id_room,room.name,  room.avatar as room_avatar, room.type
+            FROM user
+            LEFT JOIN user_room ON user.id_user = user_room.id_user
+            left JOIN (SELECT  room.* from user_room, room  WHERE room.id_room = user_room.id_room and (room.type = 'friend' or room.type = 'chatbot') and user_room.id_user ="${id_user}") as Meroom on Meroom.id_room = user_room.id_room
+            left JOIN room on room.id_room = Meroom.id_room
+            WHERE user.id_user <> "${id_user}" and (user.id_user = "${id_user}" or fullname like "%${q}%" or username like "%${q}%")
+            GROUP by  user.id_user
+            ORDER BY user.fullname DESC) 
+            UNION (select  '', '','','' , room.id_room, room.name,  room.avatar, room.type
+                                 from room
                                  LEFT JOIN user_room ON room.id_room = user_room.id_room
                                  LEFT JOIN user ON user_room.id_user = user.id_user
                                  and user_room.id_room in (SELECT user_room.id_room from user_room  WHERE user_room.id_user ="${id_user}")
                                   WHERE room.type ='group' and (room.name like "%${q}%")
                                 )  
-LIMIT ${limit} OFFSET ${offset}
-      `)
+            LIMIT ${limit} OFFSET ${offset} `;
+      console.log(sql)
+      const users = await queryDb(sql)
       if (_.isEmpty(users)) {
         return {
           users,
