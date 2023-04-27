@@ -23,5 +23,13 @@ async function queryDb(query: any) {
     connection.release();
   }
 }
-
+async function executeDb(query: any, values: []) {
+  const connection = await pool.getConnection();
+  try {
+    const [rows] = await connection.execute<RowDataPacket[]>(query, values);
+    return rows;
+  } finally {
+    connection.release();
+  }
+}
 export default queryDb;

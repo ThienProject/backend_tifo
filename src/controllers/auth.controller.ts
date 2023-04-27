@@ -28,6 +28,19 @@ const authController = {
     } catch (error) {
       next(error);
     }
+  },
+  sendNotification: async (req: Request, res: Response, next: NextFunction) => {
+    const { id_user, id_actor, content, type } = req.body;
+    try {
+      const { message } = await authService.sendNotification({ id_user, id_actor, content, type });
+      if (message) {
+        res.send({
+          message
+        });
+      }
+    } catch (error) {
+      next(error);
+    }
   }
   ,
   register: async (req: Request, res: Response, next: NextFunction) => {

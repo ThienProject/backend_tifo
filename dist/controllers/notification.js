@@ -15,14 +15,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const http_status_1 = __importDefault(require("http-status"));
 const user_services_1 = __importDefault(require("../services/user.services"));
 const __1 = require("..");
-const auth_services_1 = __importDefault(require("../services/auth.services"));
-const __2 = require("..");
 const userController = {
     getUser: function (req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { id_user, id_me } = req.body;
+            const { id_user } = req.body;
             try {
-                const { user, message } = yield user_services_1.default.getUser({ id_me, id_user });
+                const { user, message } = yield user_services_1.default.getUser(id_user);
                 if (user) {
                     res.send({
                         user
@@ -38,12 +36,14 @@ const userController = {
         return __awaiter(this, void 0, void 0, function* () {
             const { id_follower, id_user } = req.body;
             try {
-                const { message, id_follow } = yield user_services_1.default.requestFollow({ id_follower, id_user });
+                const { message } = yield user_services_1.default.requestFollow({ id_follower, id_user });
                 if (message) {
-                    yield auth_services_1.default.sendNotification({ id_follow, id_actor: id_follower, id_user, type: 'follow' });
                     res.send({
                         message,
                     });
+                    const userActive = __1.userSockets[id_user];
+                    if (userActive) {
+                    }
                 }
             }
             catch (error) {
@@ -53,13 +53,10 @@ const userController = {
     },
     acceptFollow: function (req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { id_follower, id_user, id_noti } = req.body;
+            const { id_follower, id_user } = req.body;
             try {
                 const { message, followers } = yield user_services_1.default.acceptFollow({ id_follower, id_user });
                 if (message) {
-                    if (id_noti) {
-                        yield auth_services_1.default.removeNotification({ id_noti });
-                    }
                     res.send({
                         message,
                         followers
@@ -77,10 +74,6 @@ const userController = {
             try {
                 const { message, followers } = yield user_services_1.default.unfollow({ id_follower, id_user });
                 if (message) {
-                    const userActive = __1.userSockets[id_user];
-                    if (userActive) {
-                        __2.io.to(userActive.id).emit('delete-notification', { id_actor: id_follower, id_user });
-                    }
                     res.send({
                         message,
                         followers
@@ -94,13 +87,10 @@ const userController = {
     },
     rejectFollow: function (req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { id_follower, id_user, id_noti } = req.body;
+            const { id_follower, id_user } = req.body;
             try {
                 const { message, followers } = yield user_services_1.default.rejectFollow({ id_follower, id_user });
                 if (message) {
-                    if (id_noti) {
-                        yield auth_services_1.default.removeNotification({ id_noti });
-                    }
                     res.send({
                         message,
                         followers

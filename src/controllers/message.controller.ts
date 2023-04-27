@@ -10,7 +10,6 @@ import { IPayloadSearchRoom } from '../types/message';
 const messageController = {
   getChatsByIDRoom: async (req: Request, res: Response, next: NextFunction) => {
     const query: IGetChatsByIDRoom = req.query;
-    console.log(query)
     const id_room = query.id_room;
     try {
       const { chats, message } = await messageServices.getChatsByIDRoom(query);

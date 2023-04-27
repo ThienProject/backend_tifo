@@ -48,13 +48,14 @@ export const io = require('socket.io')(server, {
 });
 
 
-
+export const userSockets: any = {};
 io.on("connection", (socket: any) => {
-  console.log("connection io")
-  console.log(`⚡: ${socket.id} user just connected!`);
-
+  socket.id_user = socket.handshake.query.id_user;
+  console.log(`⚡: ${socket.id_user} user just connected!`);
+  userSockets[socket.id_user] = socket;
   socket.on("disconnect", () => {
-    console.log("🔥: A user disconnected");
+    console.log("🔥: A user disconnected " + socket.id_user);
+    delete userSockets[socket.id_user];
   });
 });
 

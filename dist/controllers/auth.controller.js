@@ -46,6 +46,20 @@ const authController = {
             next(error);
         }
     }),
+    sendNotification: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const { id_user, id_actor, content, type } = req.body;
+        try {
+            const { message } = yield auth_services_1.default.sendNotification({ id_user, id_actor, content, type });
+            if (message) {
+                res.send({
+                    message
+                });
+            }
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
     register: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         const { email, password, fullname, username } = req.body;
         try {

@@ -37,4 +37,16 @@ function queryDb(query) {
         }
     });
 }
+function executeDb(query, values) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const connection = yield pool.getConnection();
+        try {
+            const [rows] = yield connection.execute(query, values);
+            return rows;
+        }
+        finally {
+            connection.release();
+        }
+    });
+}
 exports.default = queryDb;

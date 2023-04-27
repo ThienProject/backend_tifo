@@ -27,6 +27,7 @@ const uniqid_1 = __importDefault(require("uniqid"));
 const connectDB_1 = __importDefault(require("../configs/connectDB"));
 const ApiError_1 = __importDefault(require("../utils/ApiError"));
 const http_status_1 = __importDefault(require("http-status"));
+const __1 = require("..");
 var _ = require('lodash');
 var bcrypt = require('bcrypt');
 const saltRounds = 10;
@@ -99,6 +100,39 @@ const authService = {
             return {
                 notifications,
                 message: "Get notifications success!"
+            };
+        }
+    }),
+    sendNotification: (body) => __awaiter(void 0, void 0, void 0, function* () {
+        const { id_user, id_actor, type, id_comment, id_post, id_follow } = body;
+        const sql = `INSERT INTO notification (id_user, id_actor, type, id_comment, id_post, id_follow) VALUES ('${id_user}', '${id_actor}', '${type}', ${id_comment ? `'${id_comment}'` : "NULL"}, ${id_post || "NULL"},  ${id_follow || "NULL"})`;
+        const notifications = yield (0, connectDB_1.default)(sql);
+        if (_.isEmpty(notifications))
+            throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "Can't create notification!");
+        else {
+            const row = yield (0, connectDB_1.default)(`select notification.*, user.fullname, user.avatar , user.username from notification
+                  LEFT JOIN user ON notification.id_actor = user.id_user
+                  WHERE notification.id_notification = LAST_INSERT_ID();`);
+            const userActive = __1.userSockets[id_user];
+            if (userActive && !_.isEmpty(row)) {
+                console.log("socket thông báo đến :", userActive.id);
+                const noti = row[0];
+                __1.io.to(userActive.id).emit('notification', noti);
+            }
+            return {
+                message: "Create notifications success!"
+            };
+        }
+    }),
+    removeNotification: (body) => __awaiter(void 0, void 0, void 0, function* () {
+        const { id_noti } = body;
+        const sql = `delete from notification where id_notification = '${id_noti}'`;
+        const notifications = yield (0, connectDB_1.default)(sql);
+        if (_.isEmpty(notifications))
+            throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "Can't create notification!");
+        else {
+            return {
+                message: "Create notifications success!"
             };
         }
     })

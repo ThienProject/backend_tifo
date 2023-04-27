@@ -315,7 +315,6 @@ const messageService = {
                                   WHERE room.type ='group' and (room.name like "%${q}%")
                                 )  
             LIMIT ${limit} OFFSET ${offset} `;
-            console.log(sql);
             const users = yield (0, connectDB_1.default)(sql);
             if (_.isEmpty(users)) {
                 return {

@@ -28,8 +28,12 @@ const ApiError_1 = __importDefault(require("../utils/ApiError"));
 const http_status_1 = __importDefault(require("http-status"));
 var _ = require('lodash');
 const userService = {
-    getUser: (id_user) => __awaiter(void 0, void 0, void 0, function* () {
-        const rows = yield (0, connectDB_1.default)(`select * from user where id_user="${id_user}"`);
+    getUser: ({ id_me, id_user }) => __awaiter(void 0, void 0, void 0, function* () {
+        const rows = yield (0, connectDB_1.default)(`select user.*, follow.status as follow
+    from user 
+    left join follow on follow.id_user = user.id_user 
+    				and  follow.id_follower ='${id_me}'
+    WHERE user.id_user='${id_user}'`);
         if (_.isEmpty(rows))
             throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "Can't find out user account!");
         else {
@@ -115,6 +119,72 @@ const userService = {
             posts,
             message: "Get posts success!"
         };
-    })
+    }),
+    requestFollow: (body) => __awaiter(void 0, void 0, void 0, function* () {
+        const { id_follower, id_user } = body;
+        let sql = `insert into follow (id_user, id_follower, status) values ('${id_user}', '${id_follower}','waiting')`;
+        const row = yield (0, connectDB_1.default)(sql);
+        if (row.insertId >= 0) {
+            console.log(row);
+            return {
+                id_follow: row.insertId,
+                message: 'request follow success !'
+            };
+        }
+        else {
+            throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'request follow failed, please try again later!');
+        }
+    }),
+    acceptFollow: (body) => __awaiter(void 0, void 0, void 0, function* () {
+        const { id_follower, id_user } = body;
+        const sql = `update follow set status = 'accept' where id_user = '${id_user}' and id_follower = '${id_follower}'`;
+        const row = yield (0, connectDB_1.default)(sql);
+        if (row.insertId >= 0) {
+            let sql = `select count(id_follower) as followers from follow where id_user =  '${id_user}'`;
+            const row = yield (0, connectDB_1.default)(sql);
+            const followers = row[0].followers;
+            return {
+                followers: followers,
+                message: 'accept follow success !'
+            };
+        }
+        else {
+            throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'accept follow failed, please try again later!');
+        }
+    }),
+    unfollow: (body) => __awaiter(void 0, void 0, void 0, function* () {
+        const { id_follower, id_user } = body;
+        const sql = `delete from follow where id_user = '${id_user}' and id_follower = '${id_follower}'`;
+        const row = yield (0, connectDB_1.default)(sql);
+        if (row.insertId >= 0) {
+            let sql = `select count(id_follower) as followers from follow where id_user =  '${id_user}'`;
+            const row = yield (0, connectDB_1.default)(sql);
+            const followers = row[0].followers;
+            return {
+                followers: followers,
+                message: 'unfollow success !'
+            };
+        }
+        else {
+            throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'unfollow failed, please try again later!');
+        }
+    }),
+    rejectFollow: (body) => __awaiter(void 0, void 0, void 0, function* () {
+        const { id_follower, id_user } = body;
+        const sql = `update follow set status = 'reject' where id_user = '${id_user}' and id_follower = '${id_follower}'`;
+        const row = yield (0, connectDB_1.default)(sql);
+        if (row.insertId >= 0) {
+            let sql = `select count(id_follower) as followers from follow where id_user =  '${id_user}'`;
+            const row = yield (0, connectDB_1.default)(sql);
+            const followers = row[0].followers;
+            return {
+                followers: followers,
+                message: 'accept follow success !'
+            };
+        }
+        else {
+            throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'accept follow failed, please try again later!');
+        }
+    }),
 };
 exports.default = userService;

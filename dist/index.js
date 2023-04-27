@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.io = void 0;
+exports.userSockets = exports.io = void 0;
 const express_1 = __importDefault(require("express"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const routes_1 = __importDefault(require("./routes"));
@@ -48,11 +48,14 @@ exports.io = require('socket.io')(server, {
         methods: ["GET", "POST"]
     }
 });
+exports.userSockets = {};
 exports.io.on("connection", (socket) => {
-    console.log("connection io");
-    console.log(`⚡: ${socket.id} user just connected!`);
+    socket.id_user = socket.handshake.query.id_user;
+    console.log(`⚡: ${socket.id_user} user just connected!`);
+    exports.userSockets[socket.id_user] = socket;
     socket.on("disconnect", () => {
-        console.log("🔥: A user disconnected");
+        console.log("🔥: A user disconnected " + socket.id_user);
+        delete exports.userSockets[socket.id_user];
     });
 });
 server.listen(port, () => {

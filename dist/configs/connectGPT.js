@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendMessage = void 0;
 const axios_1 = __importDefault(require("axios"));
 const model = 'text-davinci-003';
-const apiKey = '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';
+const apiKey = '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';
 const sendMessage = (context) => __awaiter(void 0, void 0, void 0, function* () {
     const promptHis = context.reduce((acc, obj) => {
         return `${acc}${obj.content}\n`;

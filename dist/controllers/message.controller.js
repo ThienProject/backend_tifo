@@ -18,7 +18,6 @@ const __1 = require("..");
 const messageController = {
     getChatsByIDRoom: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         const query = req.query;
-        console.log(query);
         const id_room = query.id_room;
         try {
             const { chats, message } = yield message_services_1.default.getChatsByIDRoom(query);

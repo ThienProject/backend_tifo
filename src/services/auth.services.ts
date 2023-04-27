@@ -3,6 +3,8 @@ import { IUser } from '../types/user';
 import queryDb from '../configs/connectDB';
 import ApiError from '../utils/ApiError';
 import httpStatus from 'http-status';
+import { INotification } from '../types/notification';
+import { io, userSockets } from '..';
 
 var _ = require('lodash');
 var bcrypt = require('bcrypt');
@@ -96,6 +98,45 @@ const authService = {
       return {
         notifications,
         message: "Get notifications success!"
+      }
+    }
+  },
+  sendNotification: async (body: INotification) => {
+    const { id_user, id_actor, type, id_comment, id_post, id_follow } = body;
+    const sql = `INSERT INTO notification (id_user, id_actor, type, id_comment, id_post, id_follow) VALUES ('${id_user}', '${id_actor}', '${type}', ${id_comment ? `'${id_comment}'` : "NULL"}, ${id_post || "NULL"},  ${id_follow || "NULL"})`;
+    const notifications: any = await queryDb(sql);
+    if (_.isEmpty(notifications))
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "Can't create notification!"
+      );
+    else {
+      const row = await queryDb(`select notification.*, user.fullname, user.avatar , user.username from notification
+                  LEFT JOIN user ON notification.id_actor = user.id_user
+                  WHERE notification.id_notification = LAST_INSERT_ID();`)
+      const userActive = userSockets[id_user!];
+      if (userActive && !_.isEmpty(row)) {
+        console.log("socket thông báo đến :", userActive.id)
+        const noti = row[0]
+        io.to(userActive.id).emit('notification', noti);
+      }
+      return {
+        message: "Create notifications success!"
+      }
+    }
+  },
+  removeNotification: async (body: INotification) => {
+    const { id_noti } = body;
+    const sql = `delete from notification where id_notification = '${id_noti}'`;
+    const notifications: any = await queryDb(sql);
+    if (_.isEmpty(notifications))
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "Can't create notification!"
+      );
+    else {
+      return {
+        message: "Create notifications success!"
       }
     }
   }

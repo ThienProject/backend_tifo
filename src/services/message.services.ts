@@ -3,7 +3,6 @@ import queryDb from '../configs/connectDB';
 import ApiError from '../utils/ApiError';
 import httpStatus from 'http-status';
 import { IChat, IGetChatsByIDRoom, IGetRooms, IPayloadDleChats, IPayloadSearchRoom } from '../types/message';
-import { create } from 'domain';
 import { TContext, sendMessage } from '../configs/connectGPT';
 
 
@@ -322,7 +321,6 @@ const messageService = {
                                   WHERE room.type ='group' and (room.name like "%${q}%")
                                 )  
             LIMIT ${limit} OFFSET ${offset} `;
-      console.log(sql)
       const users = await queryDb(sql)
       if (_.isEmpty(users)) {
         return {
