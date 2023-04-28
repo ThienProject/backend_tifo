@@ -3,6 +3,7 @@ import { IUser } from '../types/user';
 import queryDb from '../configs/connectDB';
 import ApiError from '../utils/ApiError';
 import httpStatus from 'http-status';
+import { io, userSockets } from '..';
 var _ = require('lodash');
 const userService = {
   getUser: async ({ id_me, id_user }: { id_me?: string, id_user: string }) => {
@@ -70,63 +71,7 @@ const userService = {
       }
     }
   },
-  getPosts: async (query: any) => {
-    const { id_user, offset, limit } = query;
-    const sql = `SELECT post.*, user.id_user, user.username, user.avatar, user.fullname from user, post where post.id_user = user.id_user and post.type ='post' and user.id_user = '${id_user}' limit ${limit} offset ${offset}`;
-    const rows: any = await queryDb(sql)
-    const posts = rows;
-    for (let i = 0; i <= posts.length - 1; i++) {
-      const id_post = posts[i].id_post;
-      const commentLength = await queryDb(`select count(comment.id_comment) as commentLength from comment where comment.id_post = '${id_post}' `)
-      // const comments = await queryDb(`select comment.*, user.id_user,user.avatar, user.fullname, user.username from comment, user where id_post = '${id_post}' and user.id_user = comment.id_user `);
-      posts[i].commentLength = commentLength ? commentLength[0].commentLength : 0;
-      const medias = await queryDb(`select *from media where id_post = '${id_post}'`);
-      posts[i].medias = medias;
-    }
-    return {
-      posts,
-      message: "Get posts success!"
-    }
 
-  },
-  getReels: async (query: any) => {
-    const { id_user, offset, limit } = query;
-    const sql = `SELECT post.*, user.id_user, user.username, user.avatar, user.fullname from user, post where post.id_user = user.id_user and post.type ='reel' and user.id_user = '${id_user}' limit ${limit} offset ${offset}`;
-    const rows: any = await queryDb(sql)
-    const posts = rows;
-    for (let i = 0; i <= posts.length - 1; i++) {
-      const id_post = posts[i].id_post;
-      const commentLength = await queryDb(`select count(comment.id_comment) as commentLength from comment where comment.id_post = '${id_post}' `)
-      // const comments = await queryDb(`select comment.*, user.id_user,user.avatar, user.fullname, user.username from comment, user where id_post = '${id_post}' and user.id_user = comment.id_user `);
-      posts[i].commentLength = commentLength ? commentLength[0].commentLength : 0;
-      const medias = await queryDb(`select *from media where id_post = '${id_post}'`);
-      posts[i].medias = medias;
-    }
-    return {
-      posts,
-      message: "Get posts success!"
-    }
-
-  },
-  getSaves: async (query: any) => {
-    const { id_user, offset, limit } = query;
-    const sql = `SELECT post.* ,user.id_user, user.username, user.avatar, user.fullname from user, save, post where post.id_user = user.id_user and post.type ='post' and user.id_user = '${id_user}' and post.id_post = save.id_post and save.id_user = user.id_user limit ${limit} offset ${offset}`;
-    const rows: any = await queryDb(sql)
-    const posts = rows;
-    for (let i = 0; i <= posts.length - 1; i++) {
-      const id_post = posts[i].id_post;
-      const commentLength = await queryDb(`select count(comment.id_comment) as commentLength from comment where comment.id_post = '${id_post}' `)
-      // const comments = await queryDb(`select comment.*, user.id_user,user.avatar, user.fullname, user.username from comment, user where id_post = '${id_post}' and user.id_user = comment.id_user `);
-      posts[i].commentLength = commentLength ? commentLength[0].commentLength : 0;
-      const medias = await queryDb(`select *from media where id_post = '${id_post}'`);
-      posts[i].medias = medias;
-    }
-    return {
-      posts,
-      message: "Get posts success!"
-    }
-
-  },
   requestFollow: async (body: any) => {
     const { id_follower, id_user } = body;
     let sql = `insert into follow (id_user, id_follower, status) values ('${id_user}', '${id_follower}','waiting')`;
@@ -188,6 +133,41 @@ const userService = {
       }
     } else {
       throw new ApiError(httpStatus.BAD_REQUEST, 'accept follow failed, please try again later!');
+    }
+  },
+  setOffline: async (id_user: string) => {
+    try {
+      const sql = `update user set off_time = NOW(), status = 'offline' where id_user = '${id_user}'`;
+      const row: any = await queryDb(sql);
+      if (row.insertId >= 0) {
+        io.emit('status', { id_user, status: 'offline' });
+
+        return {
+          message: 'ok'
+        }
+      } else {
+        console.log('offline failed, please try again later!')
+        // throw new ApiError(httpStatus.BAD_REQUEST, 'offline failed, please try again later!');
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  },
+  setOnline: async (id_user: string) => {
+    try {
+      const sql = `update user set  status = 'online' where id_user = '${id_user}'`;
+      const row: any = await queryDb(sql);
+      if (row.insertId >= 0) {
+        io.emit('status', { id_user, status: 'online' });
+        return {
+          message: 'ok'
+        }
+      } else {
+        console.log('offline failed, please try again later!')
+        // throw new ApiError(httpStatus.BAD_REQUEST, 'offline failed, please try again later!');
+      }
+    } catch (error) {
+      console.log(error)
     }
   },
 

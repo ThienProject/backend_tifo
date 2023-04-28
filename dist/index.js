@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -11,6 +20,7 @@ const cors_1 = __importDefault(require("cors"));
 const morgan_1 = __importDefault(require("morgan"));
 const error_1 = require("./middleware/error");
 const multer_1 = __importDefault(require("multer"));
+const user_services_1 = __importDefault(require("./services/user.services"));
 dotenv_1.default.config();
 const port = process.env.PORT;
 const app = (0, express_1.default)();
@@ -49,15 +59,21 @@ exports.io = require('socket.io')(server, {
     }
 });
 exports.userSockets = {};
-exports.io.on("connection", (socket) => {
+exports.io.on("connection", (socket) => __awaiter(void 0, void 0, void 0, function* () {
     socket.id_user = socket.handshake.query.id_user;
     console.log(`⚡: ${socket.id_user} user just connected!`);
     exports.userSockets[socket.id_user] = socket;
-    socket.on("disconnect", () => {
+    if (socket.id_user && socket.id_user != 'undefined') {
+        yield user_services_1.default.setOnline(socket.id_user);
+    }
+    socket.on("disconnect", () => __awaiter(void 0, void 0, void 0, function* () {
         console.log("🔥: A user disconnected " + socket.id_user);
+        if (socket.id_user && socket.id_user != 'undefined') {
+            yield user_services_1.default.setOffline(socket.id_user);
+        }
         delete exports.userSockets[socket.id_user];
-    });
-});
+    }));
+}));
 server.listen(port, () => {
     console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
 });

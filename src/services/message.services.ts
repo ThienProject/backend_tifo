@@ -74,13 +74,15 @@ const messageService = {
     user.username,
     user.fullname,
     user.avatar,
+    user.off_time,
+    user.status,
     chatlimit.id_chat,
     chatlimit.message,
     chatlimit.datetime
     from room 
     join user_room ON room.id_room = user_room.id_room
     JOIN (SELECT user_room.id_room from user_room WHERE user_room.id_user ="${id_me}" 	limit ${limit} OFFSET ${offset}) as roomFilter on roomFilter.id_room = user_room.id_room
-    JOIN user on user.id_user = user_room.id_user
+    JOIN user on user.id_user = user_room.id_user and user.status <> "banned"
     left JOIN ( 
             SELECT chat.* 
       		from user_room 
@@ -108,8 +110,8 @@ const messageService = {
     const rooms: any[] = rows;
     if (rooms && rooms.length > 0) {
       const newRooms = rooms.reduce((previousValue, currentValue) => {
-        const { id_room, avatar_room, name, type, id_user, username, avatar, fullname, id_chat, message, datetime } = currentValue;
-        const user = { id_user, username, fullname, avatar };
+        const { id_room, avatar_room, name, type, id_user, username, status, off_time, avatar, fullname, id_chat, message, datetime } = currentValue;
+        const user = { id_user, username, status, off_time, fullname, avatar };
         let chat = null;
         const index = previousValue.findIndex((item: any) => item.id_room === currentValue.id_room)
 
@@ -119,7 +121,7 @@ const messageService = {
           const month = currentDate.getMonth() + 1;
           const day = currentDate.getDate();
           const date = `${year}-${month.toString().padStart(2, '0')}-${day}`;
-          chat = { [date]: [{ username, fullname, avatar, id_user, id_chat, message, datetime }] };
+          chat = { [date]: [{ username, status, off_time, fullname, avatar, id_user, id_chat, message, datetime }] };
         }
         if (index === -1) {
           const newRoom: any = {

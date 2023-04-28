@@ -56,5 +56,21 @@ router.post(
   isAuth,
   postController.deleteMedias
 );
+router.get(
+  '/getPostsByIDUser',
+  validate(postValidation.getPosts),
+  postController.getPostsByIDUser
+);
 
+
+router.get(
+  '/getReelsByIDUser',
+  validate(postValidation.getPosts),
+  postController.getReelsByIDUser
+);
+router.get(
+  '/getSavesByIDUser',
+  validate(postValidation.getPosts),
+  postController.getSavesByIDUser
+);
 export default router;

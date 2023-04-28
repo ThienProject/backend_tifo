@@ -46,6 +46,51 @@ const postController = {
             next(error);
         }
     }),
+    getPostsByIDUser: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const { id_user, offset, limit } = req.query;
+        try {
+            const { posts, message } = yield post_services_1.default.getPostsByIDUser({ id_user, offset, limit });
+            if (posts) {
+                return res.status(http_status_1.default.OK).send({
+                    posts: posts,
+                    message: message
+                });
+            }
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
+    getReelsByIDUser: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const { id_user, offset, limit } = req.query;
+        try {
+            const { posts, message } = yield post_services_1.default.getReelsByIDUser({ id_user, offset, limit });
+            if (posts) {
+                return res.status(http_status_1.default.OK).send({
+                    posts: posts,
+                    message: message
+                });
+            }
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
+    getSavesByIDUser: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const { id_user, offset, limit } = req.query;
+        try {
+            const { posts, message } = yield post_services_1.default.getSavesByIDUser({ id_user, offset, limit });
+            if (posts) {
+                return res.status(http_status_1.default.OK).send({
+                    posts: posts,
+                    message: message
+                });
+            }
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
     create: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         const { id_user, target, type, description, } = req.body;
         const medias = req.files;

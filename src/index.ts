@@ -5,6 +5,7 @@ import cors from 'cors'
 import morgan from 'morgan';
 import { errorConverter, errorHandler } from './middleware/error';
 import multer from 'multer';
+import userService from './services/user.services';
 dotenv.config();
 const port = process.env.PORT;
 const app: Express = express();
@@ -49,12 +50,18 @@ export const io = require('socket.io')(server, {
 
 
 export const userSockets: any = {};
-io.on("connection", (socket: any) => {
+io.on("connection", async (socket: any) => {
   socket.id_user = socket.handshake.query.id_user;
   console.log(`⚡: ${socket.id_user} user just connected!`);
   userSockets[socket.id_user] = socket;
-  socket.on("disconnect", () => {
+  if (socket.id_user && socket.id_user != 'undefined') {
+    await userService.setOnline(socket.id_user);
+  }
+  socket.on("disconnect", async () => {
     console.log("🔥: A user disconnected " + socket.id_user);
+    if (socket.id_user && socket.id_user != 'undefined') {
+      await userService.setOffline(socket.id_user);
+    }
     delete userSockets[socket.id_user];
   });
 });

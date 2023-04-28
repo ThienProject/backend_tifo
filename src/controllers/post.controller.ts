@@ -36,6 +36,48 @@ const postController = {
       next(error);
     }
   },
+  getPostsByIDUser: async (req: Request, res: Response, next: NextFunction) => {
+    const { id_user, offset, limit } = req.query;
+    try {
+      const { posts, message } = await postService.getPostsByIDUser({ id_user, offset, limit });
+      if (posts) {
+        return res.status(httpStatus.OK).send({
+          posts: posts,
+          message: message
+        })
+      }
+    } catch (error) {
+      next(error);
+    }
+  },
+  getReelsByIDUser: async (req: Request, res: Response, next: NextFunction) => {
+    const { id_user, offset, limit } = req.query;
+    try {
+      const { posts, message } = await postService.getReelsByIDUser({ id_user, offset, limit });
+      if (posts) {
+        return res.status(httpStatus.OK).send({
+          posts: posts,
+          message: message
+        })
+      }
+    } catch (error) {
+      next(error);
+    }
+  },
+  getSavesByIDUser: async (req: Request, res: Response, next: NextFunction) => {
+    const { id_user, offset, limit } = req.query;
+    try {
+      const { posts, message } = await postService.getSavesByIDUser({ id_user, offset, limit });
+      if (posts) {
+        return res.status(httpStatus.OK).send({
+          posts: posts,
+          message: message
+        })
+      }
+    } catch (error) {
+      next(error);
+    }
+  },
   create: async (req: Request, res: Response, next: NextFunction) => {
     const {
       id_user,
