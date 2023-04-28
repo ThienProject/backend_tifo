@@ -73,21 +73,21 @@ const postService = {
         }
         const sql = id_user !== ''
             ?
-                `SELECT post.*, user.id_user, user.username, user.avatar, user.fullname, count(love.id_user) as loves,
-        CASE WHEN love.id_user = '${id_user}' THEN true ELSE false END AS isLove, 
-        CASE WHEN save.id_user = '${id_user}' THEN true ELSE false END AS isSave
-        FROM post
-        LEFT JOIN save ON post.id_post = save.id_post
-        LEFT JOIN user ON post.id_user = user.id_user
-        LEFT JOIN love ON post.id_post = love.id_post
-        LEFT JOIN follow ON follow.id_user = post.id_user AND post.target = 'follower' AND follow.id_follower = '${id_user}' 
-                          OR post.target = 'public'
-        WHERE post.type = '${type}'
-        GROUP BY post.id_post, user.id_user
-        ORDER BY post.date_time DESC
+                `SELECT post.*, user.username, user.avatar, user.fullname, (SELECT COUNT(*) FROM love       WHERE love.id_post = post.id_post) AS loves,
+      CASE WHEN LovePost.id_user = '${id_user}' THEN true ELSE false END AS isLove,
+      CASE WHEN save.id_user = '${id_user}' THEN true ELSE false END AS isSave
+      FROM post
+      LEFT JOIN save ON post.id_post = save.id_post
+      LEFT JOIN user ON post.id_user = user.id_user
+      LEFT JOIN (SELECT love.id_post, love.id_user from love WHERE love.id_user = 					 '${id_user}' ) as LovePost ON post.id_post = LovePost.id_post
+      LEFT JOIN follow ON follow.id_user = post.id_user AND post.target = 'follower' AND 			  follow.id_follower = '${id_user}'
+                        OR post.target = 'public'
+      WHERE post.type = '${type}'
+      GROUP BY post.id_post
+      ORDER BY post.date_time DESC
         LIMIT ${limit} OFFSET ${offset};`
             :
-                `SELECT post.*, user.username, user.fullname, user.avatar, COUNT(love.id_user) AS loves 
+                `SELECT post.*, user.username, user.fullname, user.avatar, (SELECT COUNT(*) FROM love 	WHERE love.id_post = post.id_post) AS loves
         FROM post 
         LEFT JOIN user ON post.id_user = user.id_user 
         LEFT JOIN love ON love.id_post = post.id_post 

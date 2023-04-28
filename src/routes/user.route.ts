@@ -10,6 +10,10 @@ router.get(
   validate(userValidation.getUsers),
   userController.getUsers
 );
+router.get(
+  '/suggests/gets',
+  userController.getUserSuggests
+);
 router.post(
   '/get',
   validate(userValidation.getUser),

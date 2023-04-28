@@ -126,6 +126,20 @@ const userController = {
             next(error);
         }
     }),
+    getUserSuggests: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const { offset, limit, id_user } = req.query;
+        try {
+            const { users, messages } = yield user_services_1.default.getUserSuggests({ offset, limit, id_user });
+            if (users) {
+                res.send({
+                    users, messages
+                });
+            }
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
     getPosts: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         const { id_user, offset, limit } = req.query;
         try {

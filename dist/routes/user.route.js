@@ -11,6 +11,7 @@ const user_validations_1 = __importDefault(require("../validations/user.validati
 const auth_middleware_1 = require("../middleware/auth/auth.middleware");
 const router = express_1.default.Router();
 router.get('/gets', (0, validate_1.default)(user_validations_1.default.getUsers), user_controller_1.default.getUsers);
+router.get('/suggests/gets', user_controller_1.default.getUserSuggests);
 router.post('/get', (0, validate_1.default)(user_validations_1.default.getUser), user_controller_1.default.getUser);
 router.get('/getPosts', (0, validate_1.default)(post_validation_1.default.getPosts), user_controller_1.default.getPosts);
 router.get('/getReels', (0, validate_1.default)(post_validation_1.default.getPosts), user_controller_1.default.getReels);

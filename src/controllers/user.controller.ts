@@ -100,6 +100,19 @@ const userController = {
       next(error);
     }
   },
+  getUserSuggests: async (req: Request, res: Response, next: NextFunction) => {
+    const { offset, limit, id_user } = req.query;
+    try {
+      const { users, messages } = await userService.getUserSuggests({ offset, limit, id_user });
+      if (users) {
+        res.send({
+          users, messages
+        });
+      }
+    } catch (error) {
+      next(error);
+    }
+  },
   getPosts: async (req: Request, res: Response, next: NextFunction) => {
     const { id_user, offset, limit } = req.query;
     try {

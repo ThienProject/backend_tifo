@@ -49,7 +49,29 @@ const userService = {
         const { q, offset, limit, id_user } = paramsBody;
         const users = yield (0, connectDB_1.default)(`
       select id_user,	id_role,	fullname,	username,	description,	phone,	email,	address,	birthday,	gender,	avatar,	cover from user 
-      where id_user <> '${id_user}' and (id_user = "${q}" or fullname like "%${q}%" or username like "%${q}%")
+      where id_user <> '${id_user}' and (id_user = "${q}" or fullname like "%${q}%" or username like "%${q}%") and user.id_role = 2
+      order by fullname desc
+      limit ${limit} offset ${offset}
+      `);
+        if (_.isEmpty(users)) {
+            return {
+                users,
+                messages: 'No account !'
+            };
+        }
+        else {
+            return {
+                users,
+                messages: 'Search success !'
+            };
+        }
+    }),
+    getUserSuggests: (paramsBody) => __awaiter(void 0, void 0, void 0, function* () {
+        const { offset, limit, id_user } = paramsBody;
+        const users = yield (0, connectDB_1.default)(`
+      select user.id_user,	id_role,	fullname,	username,	description,	phone,	email,	address,	birthday,	gender,	avatar,	cover from user 
+      where user.id_user <> '${id_user}' and user.id_user not in (select follow.id_user from follow WHERE follow.id_follower = '${id_user}' ) and user.id_role = 2
+      GROUP by user.id_user 
       order by fullname desc
       limit ${limit} offset ${offset}
       `);
