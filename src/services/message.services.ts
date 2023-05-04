@@ -24,31 +24,71 @@ const checkRoomID = async (id_user: string, id_friend?: string) => {
     return room[0].id_room;
   }
   return false;
-
+};
+const getChatRecent = async () => {
+  const chat: any = await queryDb(`
+                  SELECT 
+                  chat.id_chat, chat.datetime, chat.message, 
+                  user_room.id_room, room.avatar as avatar_room, room.type, room.name,
+                  user.id_user, user.fullname, user.username, user.avatar 
+                  FROM chat 
+                  JOIN user_room ON chat.id_user_room = user_room.id_user_room
+                  LEFT JOIN room ON user_room.id_room = room.id_room
+                  LEFT JOIN  user ON user.id_user = user_room.id_user
+                  WHERE chat.id_chat = LAST_INSERT_ID();`)
+  const newChat = chat[0];
+  const currentDate = newChat.datetime;
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth() + 1;
+  const day = currentDate.getDate();
+  const date = `${year}-${month.toString().padStart(2, '0')}-${day}`;
+  const id_room = newChat.id_room;
+  const avatar = newChat.avatar_room;
+  const name = newChat.name;
+  const type = newChat.type;
+  return { newChat, date, id_room, avatar, name, type };
 }
 const messageService = {
-  createRoom: async (id_user: string, id_friend?: string, firstMessage?: string, type?: string) => {
-    const idFriend = id_friend ? id_friend : idChatbot;
-    const roomType = type ? type : 'friend';
+  createRoom: async ({ users, firstMessage, type = 'friend', name }: { users: { id_user: string, isOwner?: boolean }[], firstMessage?: string, type?: string, name?: string }) => {
     let id_room = '';
-    id_room = await checkRoomID(id_user, id_friend);
+    let messageCreateGroup = '';
+    if (users.length == 2)
+      id_room = await checkRoomID(users[0].id_user, users[1].id_user);
     if (!id_room) {
       id_room = uniqid('ROOM_').toUpperCase();
-      const sqlRoom = `insert into Room (id_room, type) values("${id_room}", "${roomType}");`;
-      const id_user_room_friend = uniqid('RU_').toUpperCase();
-      const id_user_room_me = uniqid('RU_').toUpperCase();
-      const sqlUserRoom = `insert into user_room (id_user_room, id_user, id_room) values("${id_user_room_friend}", "${idFriend}","${id_room}"),("${id_user_room_me}", "${id_user}","${id_room}");`;
+      const sqlRoom = `insert into Room (id_room, type, name) values("${id_room}", "${type}", ${name ? `"${name}"` : null});`;
       const room: any = await queryDb(sqlRoom);
       if (room.insertId >= 0) {
+        let id_owner = '';
+        let sqlUserRoom = 'insert into user_room (id_user_room, id_user, id_room, role) values'
+        users.forEach((user) => {
+          const id_user_room = uniqid('RU_').toUpperCase();
+          let role = 2;
+          if (user.isOwner) {
+            id_owner = id_user_room;
+            role = 1;
+          }
+          sqlUserRoom += `("${id_user_room}", "${user.id_user}","${id_room}",${role}),`;
+        })
+        sqlUserRoom = sqlUserRoom.substring(0, sqlUserRoom.length - 1);
         const userRoom: any = await queryDb(sqlUserRoom);
         if (userRoom.insertId >= 0) {
-          if (firstMessage) {
-            const sqlChat = `insert into chat (id_user_room, message) values ("${id_user_room_me}", "${firstMessage}");`
-            return await queryDb(sqlChat);
-          } else { return userRoom }
+          if (users.length > 2) {
+            messageCreateGroup = 'I created this chat room!'
+          }
+          const message = firstMessage || messageCreateGroup;
+          if (message) {
+            const sqlChat = `insert into chat (id_user_room, message) values ("${id_owner}", "${message}");`
+            const roomChat: any = await queryDb(sqlChat);
+            if (roomChat.insertId < 0) {
+              throw new ApiError(httpStatus.BAD_REQUEST, "`insert into chat fail !");
+            }
+          }
         }
       }
     }
+    const { date, avatar, newChat } = await getChatRecent();
+    return { id_room, chat: newChat, date, avatar };
   },
   getRooms: async (query: IGetRooms) => {
     let { id_user: id_me, offset, limit } = query;
@@ -61,10 +101,7 @@ const messageService = {
                                 FROM user_room 
                                 WHERE id_user = "${idChatbot}" )`);
     if (roomChatbot.length <= 0) {
-      const roomChatBot: any = await messageService.createRoom(id_me!, undefined, undefined, 'chatbot');
-      if (roomChatBot.insertId < 0) {
-        throw new ApiError(httpStatus.BAD_REQUEST, "rooms does not exist !");
-      }
+      const roomChatBot: any = await messageService.createRoom({ users: [{ id_user: id_me!, isOwner: true }, { id_user: idChatbot }], type: 'chatbot' });
     }
     let sql = `SELECT room.id_room,
     room.name, 
@@ -210,26 +247,9 @@ const messageService = {
       chat = await queryDb(sql);
     }
     if (chat.insertId >= 0) {
-      const getChatRecent: any = await queryDb(`
-                  SELECT chat.id_chat, chat.datetime, user_room.id_room, room.avatar as avatar_room, room.type, room.name,
-                  user.fullname, user.username, user.avatar 
-                  FROM chat 
-                  JOIN user_room ON chat.id_user_room = user_room.id_user_room
-                  LEFT JOIN room ON user_room.id_room = room.id_room
-                  LEFT JOIN  user ON user.id_user = user_room.id_user
-                  WHERE chat.id_chat = LAST_INSERT_ID();`)
-      const newChat = getChatRecent[0];
-      const currentDate = newChat.datetime;
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth() + 1;
-      const day = currentDate.getDate();
-      const date = `${year}-${month.toString().padStart(2, '0')}-${day}`;
+      const { newChat, date, id_room } = await getChatRecent();
       return {
-        chat: {
-          ...newChat,
-          id_user: id_me,
-          message
-        },
+        chat: newChat,
         date,
         id_room,
         message: 'Create chat success !'
@@ -245,38 +265,17 @@ const messageService = {
       id_friend
     } = body
 
-    let chat: any;
+    let room: any;
 
     const users: any = await queryDb(`select user.id_user, user.fullname, user.avatar, user.username from user where user.id_user = "${id_friend}" or user.id_user = "${id_me}" `);
 
     if (users.length >= 2 && id_me) {
-      chat = await messageService.createRoom(id_me, id_friend, message)
+      room = await messageService.createRoom({ users: [{ id_user: id_me!, isOwner: true }, { id_user: id_friend! }], firstMessage: message })
     }
-    if (chat.insertId >= 0) {
-      const getChatRecent: any = await queryDb(`
-                  SELECT chat.id_chat, chat.datetime, user_room.id_room, room.avatar as avatar_room, room.type, room.name,
-                  user.fullname, user.username, user.avatar 
-                  FROM chat 
-                  JOIN user_room ON chat.id_user_room = user_room.id_user_room
-                  LEFT JOIN room ON user_room.id_room = room.id_room
-                  LEFT JOIN  user ON user.id_user = user_room.id_user
-                  WHERE chat.id_chat = LAST_INSERT_ID();`)
-      const newChat = getChatRecent[0];
-      const currentDate = newChat.datetime;
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth() + 1;
-      const day = currentDate.getDate();
-      const date = `${year}-${month.toString().padStart(2, '0')}-${day}`;
-      const id_room = newChat.id_room;
-      const avatar = newChat.avatar_room;
-      const name = newChat.name;
-      const type = newChat.type;
+    if (room) {
+      const { newChat, date, id_room, avatar, name, type } = await getChatRecent();
       return {
-        chat: {
-          ...newChat,
-          id_user: id_me,
-          message
-        },
+        chat: newChat,
         users: users,
         date,
         id_room,
@@ -383,25 +382,9 @@ const messageService = {
       chat = await queryDb(sql);
     }
     if (chat && chat.insertId >= 0) {
-      const getChatRecent: any = await queryDb(`
-                  SELECT chat.id_chat, chat.message, chat.datetime, user_room.id_room, room.avatar as avatar_room, room.type, room.name,
-                  user.fullname, user.username, user.avatar 
-                  FROM chat 
-                  JOIN user_room ON chat.id_user_room = user_room.id_user_room
-                  LEFT JOIN room ON user_room.id_room = room.id_room
-                  LEFT JOIN  user ON user.id_user = user_room.id_user
-                  WHERE chat.id_chat = LAST_INSERT_ID();`)
-      const newChat = getChatRecent[0];
-      const currentDate = newChat.datetime;
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth() + 1;
-      const day = currentDate.getDate();
-      const date = `${year}-${month.toString().padStart(2, '0')}-${day}`;
+      const { newChat, date, id_room, avatar, name, type } = await getChatRecent();
       return {
-        chat: {
-          ...newChat,
-          id_user: idGPT,
-        },
+        chat: newChat,
         date,
         id_room,
         message: 'gpt chat response success !'

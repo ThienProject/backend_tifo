@@ -20,4 +20,9 @@ router.get(
   validate(roomValidation.searchRoomOrUser),
   messageController.searchRoomOrUser
 )
+router.post(
+  '/create',
+  isAuth,
+  messageController.createRoom
+)
 export default router;

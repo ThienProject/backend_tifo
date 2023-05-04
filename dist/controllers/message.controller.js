@@ -131,5 +131,30 @@ const messageController = {
             next(error);
         }
     }),
+    createRoom: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const { users, name, type } = req.body;
+        try {
+            if (users) {
+                const { id_room, chat, avatar, date } = yield message_services_1.default.createRoom({
+                    users,
+                    name,
+                    type: 'group'
+                });
+                users.forEach((user) => {
+                    const userSocket = __1.userSockets[user.id_user];
+                    if (userSocket) {
+                        console.log("id_room", id_room);
+                        userSocket.join(id_room);
+                        userSocket.emit('create-room', { name, id_room, chat, avatar, date, users, type: 'group' });
+                    }
+                });
+                // io.to(id_room).emit('create-room', { name, id_room, chat })
+                return res.status(http_status_1.default.CREATED).send({ chat });
+            }
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
 };
 exports.default = messageController;

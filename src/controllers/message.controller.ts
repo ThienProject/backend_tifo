@@ -4,8 +4,9 @@ import messageServices from '../services/message.services';
 import httpStatus from 'http-status';
 
 import { IGetChatsByIDRoom, IGetRooms } from '../types/message';
-import { io } from '..';
+import { io, userSockets } from '..';
 import { IPayloadSearchRoom } from '../types/message';
+import { object } from 'joi';
 
 const messageController = {
   getChatsByIDRoom: async (req: Request, res: Response, next: NextFunction) => {
@@ -132,6 +133,33 @@ const messageController = {
       }
       io.emit("first-chat", newChat);
       return res.status(httpStatus.CREATED).send({ message: 'ok', id_room: result.id_room });
+    } catch (error) {
+      next(error);
+    }
+  },
+  createRoom: async (req: Request, res: Response, next: NextFunction) => {
+    const {
+      users, name, type
+    } = req.body;
+    try {
+      if (users) {
+        const { id_room, chat, avatar, date } = await messageServices.createRoom({
+          users,
+          name,
+          type: 'group'
+        })
+        users.forEach((user: { id_user: string, isOwner?: boolean }) => {
+          const userSocket = userSockets[user.id_user]
+          if (userSocket) {
+            console.log("id_room", id_room)
+            userSocket.join(id_room);
+            userSocket.emit('create-room', { name, id_room, chat, avatar, date, users, type: 'group' })
+          }
+        })
+        // io.to(id_room).emit('create-room', { name, id_room, chat })
+        return res.status(httpStatus.CREATED).send({ chat });
+      }
+
     } catch (error) {
       next(error);
     }

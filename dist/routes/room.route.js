@@ -14,4 +14,5 @@ router.get('/gets',
 // isAuth,
 message_controller_1.default.getRooms);
 router.get('/search', auth_middleware_1.isAuth, (0, validate_1.default)(room_validation_1.default.searchRoomOrUser), message_controller_1.default.searchRoomOrUser);
+router.post('/create', auth_middleware_1.isAuth, message_controller_1.default.createRoom);
 exports.default = router;
