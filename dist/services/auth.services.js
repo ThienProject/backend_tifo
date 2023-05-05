@@ -77,6 +77,16 @@ const authService = {
             throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'Password incorrect');
         }
     }),
+    updateInvisible: (body) => __awaiter(void 0, void 0, void 0, function* () {
+        const { id_user, invisible } = body;
+        const row = yield (0, connectDB_1.default)(`update user set invisible = '${invisible}' where id_user = '${id_user}'`);
+        if (_.isEmpty(row)) {
+            throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'User does not exist');
+        }
+        else {
+            return { message: 'ok' };
+        }
+    }),
     getMe: (email) => __awaiter(void 0, void 0, void 0, function* () {
         const rows = yield (0, connectDB_1.default)(`select * from user where email="${email}"`);
         if (_.isEmpty(rows))

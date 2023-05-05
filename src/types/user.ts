@@ -12,4 +12,5 @@ export interface IUser {
   gender?: string,
   avatar?: string,
   cover?: string
+  invisible?: boolean,
 }

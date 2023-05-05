@@ -90,6 +90,20 @@ const authController = {
         catch (error) {
             next(error);
         }
+    }),
+    updateInvisible: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const { id_user, invisible } = req.body;
+        try {
+            const { message } = yield auth_services_1.default.updateInvisible({ id_user, invisible });
+            if (message) {
+                res.status(http_status_1.default.OK).send({
+                    message, invisible
+                });
+            }
+        }
+        catch (error) {
+            next(error);
+        }
     })
 };
 exports.default = authController;

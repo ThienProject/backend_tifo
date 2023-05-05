@@ -72,6 +72,19 @@ const authController = {
     } catch (error) {
       next(error);
     }
+  },
+  updateInvisible: async (req: Request, res: Response, next: NextFunction) => {
+    const { id_user, invisible } = req.body;
+    try {
+      const { message } = await authService.updateInvisible({ id_user, invisible });
+      if (message) {
+        res.status(httpStatus.OK).send({
+          message, invisible
+        })
+      }
+    } catch (error) {
+      next(error);
+    }
   }
 };
 export default authController;

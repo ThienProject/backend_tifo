@@ -69,6 +69,17 @@ const authService = {
       )
     }
   },
+  updateInvisible: async (body: IUser) => {
+    const { id_user, invisible } = body;
+    const row: any = await queryDb(`update user set invisible = '${invisible}' where id_user = '${id_user}'`);
+    if (_.isEmpty(row)) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST, 'User does not exist');
+    }
+    else {
+      return { message: 'ok' }
+    }
+  },
   getMe: async (email: string) => {
     const rows: any = await queryDb(`select * from user where email="${email}"`);
     if (_.isEmpty(rows))

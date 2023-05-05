@@ -26,5 +26,9 @@ router.post(
   '/getNotifications',
   authController.getNotifications
 )
+router.post(
+  '/updateInvisible', isAuth,
+  authController.updateInvisible
+)
 
 export default router;

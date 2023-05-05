@@ -13,4 +13,5 @@ router.post('/register', (0, validate_1.default)(auth_validations_1.default.regi
 router.post('/login', (0, validate_1.default)(auth_validations_1.default.login), auth_controller_1.default.login);
 router.post('/getMe', (0, validate_1.default)(auth_validations_1.default.getMe), auth_middleware_1.isAuth, auth_controller_1.default.getMe);
 router.post('/getNotifications', auth_controller_1.default.getNotifications);
+router.post('/updateInvisible', auth_middleware_1.isAuth, auth_controller_1.default.updateInvisible);
 exports.default = router;

@@ -113,6 +113,7 @@ const messageService = {
     user.avatar,
     user.off_time,
     user.status,
+    user.invisible,
     chatlimit.id_chat,
     chatlimit.message,
     chatlimit.datetime
@@ -147,8 +148,8 @@ const messageService = {
     const rooms: any[] = rows;
     if (rooms && rooms.length > 0) {
       const newRooms = rooms.reduce((previousValue, currentValue) => {
-        const { id_room, avatar_room, name, type, id_user, username, status, off_time, avatar, fullname, id_chat, message, datetime } = currentValue;
-        const user = { id_user, username, status, off_time, fullname, avatar };
+        const { id_room, avatar_room, name, type, id_user, username, status, off_time, invisible, avatar, fullname, id_chat, message, datetime } = currentValue;
+        const user = { id_user, username, status, off_time, invisible, fullname, avatar };
         let chat = null;
         const index = previousValue.findIndex((item: any) => item.id_room === currentValue.id_room)
 
@@ -158,7 +159,7 @@ const messageService = {
           const month = currentDate.getMonth() + 1;
           const day = currentDate.getDate();
           const date = `${year}-${month.toString().padStart(2, '0')}-${day}`;
-          chat = { [date]: [{ username, status, off_time, fullname, avatar, id_user, id_chat, message, datetime }] };
+          chat = { [date]: [{ username, status, off_time, invisible, fullname, avatar, id_user, id_chat, message, datetime }] };
         }
         if (index === -1) {
           const newRoom: any = {
