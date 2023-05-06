@@ -40,6 +40,59 @@ const messageController = {
       next(error);
     }
   },
+  getUsersByIDRoom: async (req: Request, res: Response, next: NextFunction) => {
+    const query: { id_room?: string } = req.query;
+    try {
+      const { users, message } = await messageServices.getUsersByIDRoom(query);
+      if (users) {
+        return res.status(httpStatus.OK).send({
+          users,
+          message
+        })
+      }
+    } catch (error) {
+      next(error);
+    }
+  },
+  deleteRoom: async (req: Request, res: Response, next: NextFunction) => {
+    const {
+      id_room
+    } = req.body;
+    try {
+      const { message } = await messageServices.deleteRoom({
+        id_room
+      })
+      return res.status(httpStatus.CREATED).send(message);
+    } catch (error) {
+      next(error);
+    }
+  },
+  addMembers: async (req: Request, res: Response, next: NextFunction) => {
+    const {
+      users, id_room
+    } = req.body;
+    try {
+      if (users) {
+        const { id_room } = await messageServices.addMembers({
+          users,
+          id_room,
+        })
+        users.forEach((user: { id_user: string, isOwner?: boolean }) => {
+          const userSocket = userSockets[user.id_user]
+          if (userSocket) {
+            userSocket.join(id_room);
+            const newUsers = users.map((item: any) => { if (item.isOwner) item.role = 1; return item })
+            userSocket.emit('create-room', { name, id_room, chat, avatar, date, users: newUsers, type: 'group' })
+          }
+        })
+        // io.to(id_room).emit('create-room', { name, id_room, chat })
+        return res.status(httpStatus.CREATED).send({ chat });
+      }
+
+    } catch (error) {
+      next(error);
+    }
+  },
   searchRoomOrUser: async (req: Request, res: Response, next: NextFunction) => {
     const query: IPayloadSearchRoom = req.query;
 
@@ -151,9 +204,9 @@ const messageController = {
         users.forEach((user: { id_user: string, isOwner?: boolean }) => {
           const userSocket = userSockets[user.id_user]
           if (userSocket) {
-            console.log("id_room", id_room)
             userSocket.join(id_room);
-            userSocket.emit('create-room', { name, id_room, chat, avatar, date, users, type: 'group' })
+            const newUsers = users.map((item: any) => { if (item.isOwner) item.role = 1; return item })
+            userSocket.emit('create-room', { name, id_room, chat, avatar, date, users: newUsers, type: 'group' })
           }
         })
         // io.to(id_room).emit('create-room', { name, id_room, chat })
@@ -164,5 +217,6 @@ const messageController = {
       next(error);
     }
   },
+
 }
 export default messageController

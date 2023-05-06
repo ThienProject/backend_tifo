@@ -11,7 +11,7 @@ router.get(
 );
 router.get(
   '/gets',
-  // isAuth,
+  isAuth,
   messageController.getRooms
 );
 router.get(
@@ -24,5 +24,20 @@ router.post(
   '/create',
   isAuth,
   messageController.createRoom
+)
+router.post(
+  '/delete',
+  isAuth,
+  messageController.deleteRoom
+);
+router.post(
+  '/addMembers',
+  isAuth,
+  messageController.addMembers
+);
+router.get(
+  '/getUsersByIDRoom',
+  isAuth,
+  messageController.getUsersByIDRoom
 )
 export default router;

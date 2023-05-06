@@ -48,6 +48,58 @@ const messageController = {
             next(error);
         }
     }),
+    getUsersByIDRoom: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const query = req.query;
+        try {
+            const { users, message } = yield message_services_1.default.getUsersByIDRoom(query);
+            if (users) {
+                return res.status(http_status_1.default.OK).send({
+                    users,
+                    message
+                });
+            }
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
+    deleteRoom: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const { id_room } = req.body;
+        try {
+            const { message } = yield message_services_1.default.deleteRoom({
+                id_room
+            });
+            return res.status(http_status_1.default.CREATED).send(message);
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
+    addMembers: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const { users, id_room } = req.body;
+        try {
+            if (users) {
+                const { id_room } = yield message_services_1.default.addMembers({
+                    users,
+                    id_room,
+                });
+                users.forEach((user) => {
+                    const userSocket = __1.userSockets[user.id_user];
+                    if (userSocket) {
+                        userSocket.join(id_room);
+                        const newUsers = users.map((item) => { if (item.isOwner)
+                            item.role = 1; return item; });
+                        userSocket.emit('create-room', { name, id_room, chat, avatar, date, users: newUsers, type: 'group' });
+                    }
+                });
+                // io.to(id_room).emit('create-room', { name, id_room, chat })
+                return res.status(http_status_1.default.CREATED).send({ chat });
+            }
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
     searchRoomOrUser: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         const query = req.query;
         try {
@@ -143,9 +195,10 @@ const messageController = {
                 users.forEach((user) => {
                     const userSocket = __1.userSockets[user.id_user];
                     if (userSocket) {
-                        console.log("id_room", id_room);
                         userSocket.join(id_room);
-                        userSocket.emit('create-room', { name, id_room, chat, avatar, date, users, type: 'group' });
+                        const newUsers = users.map((item) => { if (item.isOwner)
+                            item.role = 1; return item; });
+                        userSocket.emit('create-room', { name, id_room, chat, avatar, date, users: newUsers, type: 'group' });
                     }
                 });
                 // io.to(id_room).emit('create-room', { name, id_room, chat })

@@ -28,13 +28,15 @@ const checkRoomID = async (id_user: string, id_friend?: string) => {
 const getChatRecent = async () => {
   const chat: any = await queryDb(`
                   SELECT 
-                  chat.id_chat, chat.datetime, chat.message, 
+                  chat.id_chat, chat.datetime, chat.message, chat.type as chat_type, chat.id_affected,
+                  chat_affected.username as affected_username,
                   user_room.id_room, room.avatar as avatar_room, room.type, room.name,
                   user.id_user, user.fullname, user.username, user.avatar 
                   FROM chat 
                   JOIN user_room ON chat.id_user_room = user_room.id_user_room
                   LEFT JOIN room ON user_room.id_room = room.id_room
-                  LEFT JOIN  user ON user.id_user = user_room.id_user
+                  LEFT JOIN user ON user.id_user = user_room.id_user
+                  left join (select chat.id_chat, user.* from user, chat where chat.id_chat = LAST_INSERT_ID() and chat.id_affected = user.id_user ) as chat_affected on chat_affected.id_chat = chat.id_chat
                   WHERE chat.id_chat = LAST_INSERT_ID();`)
   const newChat = chat[0];
   const currentDate = newChat.datetime;
@@ -46,12 +48,12 @@ const getChatRecent = async () => {
   const avatar = newChat.avatar_room;
   const name = newChat.name;
   const type = newChat.type;
+  newChat.type = newChat.chat_type;
   return { newChat, date, id_room, avatar, name, type };
 }
 const messageService = {
   createRoom: async ({ users, firstMessage, type = 'friend', name }: { users: { id_user: string, isOwner?: boolean }[], firstMessage?: string, type?: string, name?: string }) => {
     let id_room = '';
-    let messageCreateGroup = '';
     if (users.length == 2)
       id_room = await checkRoomID(users[0].id_user, users[1].id_user);
     if (!id_room) {
@@ -73,22 +75,70 @@ const messageService = {
         sqlUserRoom = sqlUserRoom.substring(0, sqlUserRoom.length - 1);
         const userRoom: any = await queryDb(sqlUserRoom);
         if (userRoom.insertId >= 0) {
-          if (users.length > 2) {
-            messageCreateGroup = 'I created this chat room!'
-          }
-          const message = firstMessage || messageCreateGroup;
+          const message = firstMessage;
+          let sqlChat = '';
           if (message) {
-            const sqlChat = `insert into chat (id_user_room, message) values ("${id_owner}", "${message}");`
-            const roomChat: any = await queryDb(sqlChat);
-            if (roomChat.insertId < 0) {
-              throw new ApiError(httpStatus.BAD_REQUEST, "`insert into chat fail !");
-            }
+            sqlChat = `insert into chat (id_user_room, message) values ("${id_owner}", "${message}");`;
+          } else {
+            sqlChat = `insert into chat (id_user_room, type) values ("${id_owner}", "create");`
+          }
+          const roomChat: any = await queryDb(sqlChat);
+          if (roomChat.insertId < 0) {
+            throw new ApiError(httpStatus.BAD_REQUEST, "`insert into chat fail !");
           }
         }
       }
     }
     const { date, avatar, newChat } = await getChatRecent();
     return { id_room, chat: newChat, date, avatar };
+  },
+  addMembers: async ({ users, id_room }: { users: { id_user: string, isOwner?: boolean }[], id_room: string }) => {
+    if (id_room) {
+      let sqlUserRoom = 'insert into user_room (id_user_room, id_user, id_room, role) values'
+      users.forEach((user) => {
+        const id_user_room = uniqid('RU_').toUpperCase();
+        let role = 2;
+        if (user.isOwner) {
+          role = 1;
+        }
+        sqlUserRoom += `("${id_user_room}", "${user.id_user}","${id_room}",${role}),`;
+      })
+      sqlUserRoom = sqlUserRoom.substring(0, sqlUserRoom.length - 1);
+      const userRoom: any = await queryDb(sqlUserRoom);
+      if (userRoom.insertId >= 0) {
+
+      } else {
+        throw new ApiError(httpStatus.BAD_REQUEST, "`add members fail !");
+      }
+    }
+    const { date, avatar, newChat } = await getChatRecent();
+    return { id_room, chat: newChat, date, avatar };
+  },
+  getUsersByIDRoom: async (paramsBody: { id_room?: string }) => {
+    const { id_room } = paramsBody;
+    try {
+      const sql = `
+            SELECT user.id_user, user.fullname, user.username, user.avatar, user_room.role
+            FROM user
+            LEFT JOIN user_room ON user.id_user = user_room.id_user
+            where user_room.id_room = '${id_room}'
+            `;
+      const users = await queryDb(sql)
+      if (_.isEmpty(users)) {
+        return {
+          users,
+          message: 'No users in room !'
+        }
+      }
+      else {
+        return {
+          users,
+          message: 'get users success !'
+        }
+      }
+    } catch (error) {
+      throw new ApiError(httpStatus.BAD_REQUEST, error ? error.toString() : 'error');
+    }
   },
   getRooms: async (query: IGetRooms) => {
     let { id_user: id_me, offset, limit } = query;
@@ -101,7 +151,7 @@ const messageService = {
                                 FROM user_room 
                                 WHERE id_user = "${idChatbot}" )`);
     if (roomChatbot.length <= 0) {
-      const roomChatBot: any = await messageService.createRoom({ users: [{ id_user: id_me!, isOwner: true }, { id_user: idChatbot }], type: 'chatbot' });
+      await messageService.createRoom({ users: [{ id_user: id_me!, isOwner: true }, { id_user: idChatbot }], type: 'chatbot' });
     }
     let sql = `SELECT room.id_room,
     room.name, 
@@ -114,15 +164,19 @@ const messageService = {
     user.off_time,
     user.status,
     user.invisible,
+    user_room.role,
     chatlimit.id_chat,
     chatlimit.message,
+    chatlimit.type as chat_type,
+    chatlimit.id_affected,
+    chatlimit.affected_username,
     chatlimit.datetime
     from room 
     join user_room ON room.id_room = user_room.id_room
     JOIN (SELECT user_room.id_room from user_room WHERE user_room.id_user ="${id_me}" 	limit ${limit} OFFSET ${offset}) as roomFilter on roomFilter.id_room = user_room.id_room
     JOIN user on user.id_user = user_room.id_user and user.status <> "banned"
     left JOIN ( 
-            SELECT chat.* 
+            SELECT chat.* , user.username as affected_username
       		from user_room 
         	JOIN (
                 SELECT user_room.id_room
@@ -138,18 +192,18 @@ const messageService = {
         						and chat_copy.id_user = "${id_me}"
                 GROUP BY chat.id_chat
                 ORDER by chat.datetime DESC) AS latest_chat ON 
-        									chat.id_user_room = latest_chat.id_user_room AND 												chat.datetime = latest_chat.max_datetime
-        	
+        									chat.id_user_room = latest_chat.id_user_room AND chat.datetime = latest_chat.max_datetime
+            left join user on user.id_user = chat.id_affected
             GROUP by user_room.id_room
             ORDER by chat.datetime DESC) as chatlimit on
              								 user_room.id_user_room = chatlimit.id_user_room
      ORDER by chatlimit.datetime  DESC`;
-    const rows: any = await queryDb(sql)
+    const rows: any = await queryDb(sql);
     const rooms: any[] = rows;
     if (rooms && rooms.length > 0) {
       const newRooms = rooms.reduce((previousValue, currentValue) => {
-        const { id_room, avatar_room, name, type, id_user, username, status, off_time, invisible, avatar, fullname, id_chat, message, datetime } = currentValue;
-        const user = { id_user, username, status, off_time, invisible, fullname, avatar };
+        const { id_room, avatar_room, name, type, id_user, username, status, off_time, chat_type, affected_username, invisible, role, avatar, fullname, id_chat, message, datetime } = currentValue;
+        const user = { id_user, username, status, off_time, invisible, role, fullname, avatar };
         let chat = null;
         const index = previousValue.findIndex((item: any) => item.id_room === currentValue.id_room)
 
@@ -159,13 +213,13 @@ const messageService = {
           const month = currentDate.getMonth() + 1;
           const day = currentDate.getDate();
           const date = `${year}-${month.toString().padStart(2, '0')}-${day}`;
-          chat = { [date]: [{ username, status, off_time, invisible, fullname, avatar, id_user, id_chat, message, datetime }] };
+          chat = { [date]: [{ username, status, off_time, invisible, fullname, avatar, id_user, id_chat, message, datetime, type: chat_type, affected_username }] };
         }
         if (index === -1) {
           const newRoom: any = {
             id_room, name, avatar: avatar_room, type, users: [], chats: [chat]
           }
-          if (user.id_user !== id_me) {
+          if (user.id_user !== id_me || newRoom.type === 'group') {
             newRoom.users = [user];
           }
           previousValue.push(newRoom);
@@ -188,13 +242,28 @@ const messageService = {
     }
 
   },
+  deleteRoom: async (body: { id_room: string }) => {
+    const {
+      id_room
+    } = body
+    const clearChats: any = await queryDb(`DELETE from room where room.id_room = "${id_room}"`)
+    if (clearChats.insertId >= 0) {
+      return {
+        message: 'Delete room success !'
+      }
+    } else {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Delete room failed, please try again later!');
+    }
+  },
   getChatsByIDRoom: async (query: IGetChatsByIDRoom) => {
     const { id_user, id_room, limit, offset } = query;
-    const sql = `select chat.*, user.id_user, user.fullname, user.username, user.avatar from 
+    const sql = `select chat.*,
+                  chat_affected.username as affected_username, user.id_user, user.fullname, user.username, user.avatar from 
               chat 
               LEFT JOIN user_room ON chat.id_user_room = user_room.id_user_room
               Left Join user on user_room.id_user = user.id_user
               right join chat_copy on chat_copy.id_chat = chat.id_chat and chat_copy.id_user = '${id_user}'
+              left join (select chat.id_chat, user.* from user, chat WHERE chat.id_affected = user.id_user ) as chat_affected on chat_affected.id_chat = chat.id_chat
               where user_room.id_room = "${id_room}"
               ORDER by chat.datetime DESC
               limit ${limit} offset ${offset}`;
@@ -300,7 +369,7 @@ const messageService = {
         message: 'Clear chat success !'
       }
     } else {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'create chat failed, please try again later!');
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Clear chat failed, please try again later!');
     }
   },
   searchRoomOrUser: async (paramsBody: IPayloadSearchRoom) => {
@@ -313,8 +382,8 @@ const messageService = {
             left JOIN (SELECT  room.* from user_room, room  WHERE room.id_room = user_room.id_room and (room.type = 'friend' or room.type = 'chatbot') and user_room.id_user ="${id_user}") as Meroom on Meroom.id_room = user_room.id_room
             left JOIN room on room.id_room = Meroom.id_room
             WHERE user.id_user <> "${id_user}" and (user.id_user = "${id_user}" or fullname like "%${q}%" or username like "%${q}%")
-            GROUP by  user.id_user
-            ORDER BY user.fullname DESC) 
+            GROUP by user.id_user, room.id_room
+            ORDER BY user.fullname , room.id_room DESC) 
             UNION (select  '', '','','' , room.id_room, room.name,  room.avatar, room.type
                                  from room
                                  LEFT JOIN user_room ON room.id_room = user_room.id_room
@@ -323,7 +392,18 @@ const messageService = {
                                   WHERE room.type ='group' and (room.name like "%${q}%")
                                 )  
             LIMIT ${limit} OFFSET ${offset} `;
-      const users = await queryDb(sql)
+      const users: any = await queryDb(sql);
+      const newUsers = users.reduce((array: any[], currentValue: any) => {
+        const indexUser = array.findIndex((item) => item.id_user === currentValue.id_user)
+        if (indexUser != -1) {
+          if (currentValue.id_room) {
+            array[indexUser] = currentValue;
+          }
+        } else {
+          array.push(currentValue);
+        }
+        return array;
+      }, [])
       if (_.isEmpty(users)) {
         return {
           users,
@@ -332,7 +412,7 @@ const messageService = {
       }
       else {
         return {
-          users,
+          users: newUsers,
           message: 'Search success !'
         }
       }
