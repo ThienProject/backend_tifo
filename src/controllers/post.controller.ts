@@ -190,6 +190,7 @@ const postController = {
       const { message } = await postService.delete({ id_post });
       if (message) {
         return res.status(httpStatus.OK).send({
+          id_post,
           message: message
         })
       }

@@ -186,6 +186,7 @@ const postController = {
             const { message } = yield post_services_1.default.delete({ id_post });
             if (message) {
                 return res.status(http_status_1.default.OK).send({
+                    id_post,
                     message: message
                 });
             }
