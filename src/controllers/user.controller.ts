@@ -113,7 +113,19 @@ const userController = {
       next(error);
     }
   },
-
+  getUsersNotInRoom: async (req: Request, res: Response, next: NextFunction) => {
+    const { q, offset, limit, id_user, id_room } = req.query;
+    try {
+      const { users, messages } = await userService.getUsersNotInRoom({ q, offset, limit, id_user, id_room });
+      if (users) {
+        res.send({
+          users, messages
+        });
+      }
+    } catch (error) {
+      next(error);
+    }
+  },
 
 }
 export default userController;

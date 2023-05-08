@@ -25,10 +25,15 @@ router.post(
   isAuth,
   messageController.createRoom
 )
-router.post(
+router.delete(
   '/delete',
   isAuth,
   messageController.deleteRoom
+);
+router.delete(
+  '/user/delete',
+  isAuth,
+  messageController.deleteUser
 );
 router.post(
   '/addMembers',

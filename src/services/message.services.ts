@@ -92,9 +92,10 @@ const messageService = {
     const { date, avatar, newChat } = await getChatRecent();
     return { id_room, chat: newChat, date, avatar };
   },
-  addMembers: async ({ users, id_room }: { users: { id_user: string, isOwner?: boolean }[], id_room: string }) => {
+  addMembers: async ({ users, id_room, id_user }: { id_user: string, users: { id_user: string, isOwner?: boolean }[], id_room: string }) => {
     if (id_room) {
       let sqlUserRoom = 'insert into user_room (id_user_room, id_user, id_room, role) values'
+      let sqlActions = `insert into chat (id_user_room, type, id_affected) values`
       users.forEach((user) => {
         const id_user_room = uniqid('RU_').toUpperCase();
         let role = 2;
@@ -102,11 +103,21 @@ const messageService = {
           role = 1;
         }
         sqlUserRoom += `("${id_user_room}", "${user.id_user}","${id_room}",${role}),`;
+        sqlActions += `((select user_room.id_user_room from user_room where id_room = '${id_room}' and id_user = '${id_user}'), "add", "${user.id_user}"),`;
       })
       sqlUserRoom = sqlUserRoom.substring(0, sqlUserRoom.length - 1);
+      sqlActions = sqlActions.substring(0, sqlActions.length - 1);
+      console.log(sqlActions);
       const userRoom: any = await queryDb(sqlUserRoom);
       if (userRoom.insertId >= 0) {
-
+        const chat_actions: any = await queryDb(sqlActions);
+        const { chats, room } = await messageService.getChatsByIDRoom({ id_room, id_user, limit: users.length })
+        return {
+          chats: chats,
+          limit: users.length,
+          room,
+          message: 'add members success !'
+        }
       } else {
         throw new ApiError(httpStatus.BAD_REQUEST, "`add members fail !");
       }
@@ -255,22 +266,44 @@ const messageService = {
       throw new ApiError(httpStatus.BAD_REQUEST, 'Delete room failed, please try again later!');
     }
   },
+  deleteUser: async (body: { id_room: string, id_user: string, id_owner: string }) => {
+    const {
+      id_room, id_user, id_owner
+    } = body
+    const clearChats: any = await queryDb(`DELETE from user_room where user_room.id_user = "${id_user}" and user_room.id_room = "${id_room}"`)
+    if (clearChats.insertId >= 0) {
+      const sqlChat = `insert into chat (id_user_room, type, id_affected) values ((select user_room.id_user_room from user_room where id_room = '${id_room}' and id_user = "${id_owner}"), "remove", "${id_user}" );`
+      const roomChat: any = await queryDb(sqlChat);
+      if ((roomChat.insertId >= 0)) {
+        const { date, avatar, newChat } = await getChatRecent();
+        return { id_room, chat: newChat, date, avatar, message: 'Delete room success !' };
+      } else {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Delete room failed, please try again later!');
+      }
+    } else {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Delete room failed, please try again later!');
+    }
+  },
   getChatsByIDRoom: async (query: IGetChatsByIDRoom) => {
     const { id_user, id_room, limit, offset } = query;
-    const sql = `select chat.*,
+    const sql = `select chat.*, room.type as room_type, room.id_room, room.name, room.avatar,
                   chat_affected.username as affected_username, user.id_user, user.fullname, user.username, user.avatar from 
               chat 
               LEFT JOIN user_room ON chat.id_user_room = user_room.id_user_room
               Left Join user on user_room.id_user = user.id_user
               right join chat_copy on chat_copy.id_chat = chat.id_chat and chat_copy.id_user = '${id_user}'
               left join (select chat.id_chat, user.* from user, chat WHERE chat.id_affected = user.id_user ) as chat_affected on chat_affected.id_chat = chat.id_chat
+              left join room on room.id_room = user_room.id_room
               where user_room.id_room = "${id_room}"
               ORDER by chat.datetime DESC
-              limit ${limit} offset ${offset}`;
+              limit ${limit} OFFSET ${offset || 0} 
+              `;
     const rows: any = await queryDb(sql);
     const chats: any[] = rows.reverse();
     if (chats.length > 0) {
+      const { room_type: type, id_room, name, avatar } = chats[0];
       const newChats = chats.reduce((previousValue, currentValue) => {
+
         const currentDate = currentValue.datetime;
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth() + 1;
@@ -291,6 +324,7 @@ const messageService = {
       }, [])
       return {
         chats: newChats,
+        room: { type, id_room, name, avatar },
         message: "Get chats success!"
       }
     }

@@ -38,6 +38,14 @@ const messageController = {
         try {
             const { rooms, message } = yield message_services_1.default.getRooms(query);
             if (rooms) {
+                rooms.forEach((room) => {
+                    room.users.forEach((user) => {
+                        const userSocket = __1.userSockets[user.id_user];
+                        if (userSocket) {
+                            userSocket.join(room.id_room);
+                        }
+                    });
+                });
                 return res.status(http_status_1.default.OK).send({
                     rooms: rooms,
                     message: message
@@ -75,25 +83,38 @@ const messageController = {
             next(error);
         }
     }),
+    deleteUser: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const { id_room, id_user, id_owner } = req.body;
+        try {
+            const { message, chat, avatar, date } = yield message_services_1.default.deleteUser({
+                id_room, id_user, id_owner
+            });
+            __1.io.to(id_room).emit('delete_member', { id_user, id_room, message, chat, avatar, date });
+            const userSocket = __1.userSockets[id_user];
+            if (userSocket) {
+                userSocket.leave(id_room);
+            }
+            return res.status(http_status_1.default.CREATED).send(message);
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
     addMembers: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-        const { users, id_room } = req.body;
+        const { users, id_room, id_user } = req.body;
         try {
             if (users) {
-                const { id_room } = yield message_services_1.default.addMembers({
-                    users,
-                    id_room,
+                const { message, chats, limit, room } = yield message_services_1.default.addMembers({
+                    users, id_room, id_user
                 });
                 users.forEach((user) => {
                     const userSocket = __1.userSockets[user.id_user];
                     if (userSocket) {
                         userSocket.join(id_room);
-                        const newUsers = users.map((item) => { if (item.isOwner)
-                            item.role = 1; return item; });
-                        userSocket.emit('create-room', { name, id_room, chat, avatar, date, users: newUsers, type: 'group' });
                     }
                 });
-                // io.to(id_room).emit('create-room', { name, id_room, chat })
-                return res.status(http_status_1.default.CREATED).send({ chat });
+                __1.io.to(id_room).emit('add_members', { users, id_room, message, chats, limit, room });
+                return res.status(http_status_1.default.CREATED).send({ id_room, message, chats, limit });
             }
         }
         catch (error) {
@@ -176,7 +197,13 @@ const messageController = {
                 id_friend
             });
             const newChat = Object.assign({}, result);
-            __1.io.emit("first-chat", newChat);
+            result.users.forEach((user) => __awaiter(void 0, void 0, void 0, function* () {
+                const userSocket = __1.userSockets[user.id_user];
+                if (userSocket) {
+                    userSocket.join(result.id_room);
+                }
+            }));
+            __1.io.to(result.id_room).emit("first-chat", newChat);
             return res.status(http_status_1.default.CREATED).send({ message: 'ok', id_room: result.id_room });
         }
         catch (error) {
@@ -192,16 +219,15 @@ const messageController = {
                     name,
                     type: 'group'
                 });
-                users.forEach((user) => {
+                users.forEach((user) => __awaiter(void 0, void 0, void 0, function* () {
                     const userSocket = __1.userSockets[user.id_user];
                     if (userSocket) {
                         userSocket.join(id_room);
-                        const newUsers = users.map((item) => { if (item.isOwner)
-                            item.role = 1; return item; });
-                        userSocket.emit('create-room', { name, id_room, chat, avatar, date, users: newUsers, type: 'group' });
                     }
-                });
-                // io.to(id_room).emit('create-room', { name, id_room, chat })
+                }));
+                const newUsers = users.map((item) => { if (item.isOwner)
+                    item.role = 1; return item; });
+                __1.io.to(id_room).emit('create-room', { name, id_room, chat, avatar, date, users: newUsers, type: 'group' });
                 return res.status(http_status_1.default.CREATED).send({ chat });
             }
         }

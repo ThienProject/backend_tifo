@@ -27,10 +27,18 @@ const messageController = {
   },
   getRooms: async (req: Request, res: Response, next: NextFunction) => {
     const query: IGetRooms = req.query;
-
     try {
       const { rooms, message } = await messageServices.getRooms(query);
       if (rooms) {
+        rooms.forEach((room: any) => {
+          room.users.forEach((user: { id_user: string, isOwner?: boolean }) => {
+            const userSocket = userSockets[user.id_user]
+            if (userSocket) {
+              userSocket.join(room.id_room);
+            }
+          })
+        })
+
         return res.status(httpStatus.OK).send({
           rooms: rooms,
           message: message
@@ -67,26 +75,42 @@ const messageController = {
       next(error);
     }
   },
+  deleteUser: async (req: Request, res: Response, next: NextFunction) => {
+    const {
+      id_room, id_user, id_owner
+    } = req.body;
+    try {
+      const { message, chat, avatar, date } = await messageServices.deleteUser({
+        id_room, id_user, id_owner
+      })
+
+      io.to(id_room).emit('delete_member', { id_user, id_room, message, chat, avatar, date })
+      const userSocket = userSockets[id_user];
+      if (userSocket) {
+        userSocket.leave(id_room);
+      }
+      return res.status(httpStatus.CREATED).send(message);
+    } catch (error) {
+      next(error);
+    }
+  },
   addMembers: async (req: Request, res: Response, next: NextFunction) => {
     const {
-      users, id_room
+      users, id_room, id_user
     } = req.body;
     try {
       if (users) {
-        const { id_room } = await messageServices.addMembers({
-          users,
-          id_room,
+        const { message, chats, limit, room } = await messageServices.addMembers({
+          users, id_room, id_user
         })
         users.forEach((user: { id_user: string, isOwner?: boolean }) => {
           const userSocket = userSockets[user.id_user]
           if (userSocket) {
             userSocket.join(id_room);
-            const newUsers = users.map((item: any) => { if (item.isOwner) item.role = 1; return item })
-            userSocket.emit('create-room', { name, id_room, chat, avatar, date, users: newUsers, type: 'group' })
           }
         })
-        // io.to(id_room).emit('create-room', { name, id_room, chat })
-        return res.status(httpStatus.CREATED).send({ chat });
+        io.to(id_room).emit('add_members', { users, id_room, message, chats, limit, room })
+        return res.status(httpStatus.CREATED).send({ id_room, message, chats, limit });
       }
 
     } catch (error) {
@@ -184,7 +208,13 @@ const messageController = {
       const newChat = {
         ...result
       }
-      io.emit("first-chat", newChat);
+      result.users.forEach(async (user: { id_user: string, isOwner?: boolean }) => {
+        const userSocket = userSockets[user.id_user]
+        if (userSocket) {
+          userSocket.join(result.id_room);
+        }
+      })
+      io.to(result.id_room).emit("first-chat", newChat);
       return res.status(httpStatus.CREATED).send({ message: 'ok', id_room: result.id_room });
     } catch (error) {
       next(error);
@@ -201,18 +231,17 @@ const messageController = {
           name,
           type: 'group'
         })
-        users.forEach((user: { id_user: string, isOwner?: boolean }) => {
+
+        users.forEach(async (user: { id_user: string, isOwner?: boolean }) => {
           const userSocket = userSockets[user.id_user]
           if (userSocket) {
             userSocket.join(id_room);
-            const newUsers = users.map((item: any) => { if (item.isOwner) item.role = 1; return item })
-            userSocket.emit('create-room', { name, id_room, chat, avatar, date, users: newUsers, type: 'group' })
           }
         })
-        // io.to(id_room).emit('create-room', { name, id_room, chat })
+        const newUsers = users.map((item: any) => { if (item.isOwner) item.role = 1; return item })
+        io.to(id_room).emit('create-room', { name, id_room, chat, avatar, date, users: newUsers, type: 'group' })
         return res.status(httpStatus.CREATED).send({ chat });
       }
-
     } catch (error) {
       next(error);
     }

@@ -139,5 +139,19 @@ const userController = {
             next(error);
         }
     }),
+    getUsersNotInRoom: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const { q, offset, limit, id_user, id_room } = req.query;
+        try {
+            const { users, messages } = yield user_services_1.default.getUsersNotInRoom({ q, offset, limit, id_user, id_room });
+            if (users) {
+                res.send({
+                    users, messages
+                });
+            }
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
 };
 exports.default = userController;

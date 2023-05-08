@@ -13,7 +13,8 @@ router.get('/getChatsByIDRoom', auth_middleware_1.isAuth, message_controller_1.d
 router.get('/gets', auth_middleware_1.isAuth, message_controller_1.default.getRooms);
 router.get('/search', auth_middleware_1.isAuth, (0, validate_1.default)(room_validation_1.default.searchRoomOrUser), message_controller_1.default.searchRoomOrUser);
 router.post('/create', auth_middleware_1.isAuth, message_controller_1.default.createRoom);
-router.post('/delete', auth_middleware_1.isAuth, message_controller_1.default.deleteRoom);
+router.delete('/delete', auth_middleware_1.isAuth, message_controller_1.default.deleteRoom);
+router.delete('/user/delete', auth_middleware_1.isAuth, message_controller_1.default.deleteUser);
 router.post('/addMembers', auth_middleware_1.isAuth, message_controller_1.default.addMembers);
 router.get('/getUsersByIDRoom', auth_middleware_1.isAuth, message_controller_1.default.getUsersByIDRoom);
 exports.default = router;

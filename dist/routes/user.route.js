@@ -16,4 +16,5 @@ router.post('/follow/request', auth_middleware_1.isAuth, (0, validate_1.default)
 router.post('/follow/accept', auth_middleware_1.isAuth, (0, validate_1.default)(user_validations_1.default.follow), user_controller_1.default.acceptFollow);
 router.post('/follow/reject', auth_middleware_1.isAuth, (0, validate_1.default)(user_validations_1.default.follow), user_controller_1.default.rejectFollow);
 router.post('/unfollow', auth_middleware_1.isAuth, (0, validate_1.default)(user_validations_1.default.follow), user_controller_1.default.unfollow);
+router.get('/getUsersNotInRoom', auth_middleware_1.isAuth, user_controller_1.default.getUsersNotInRoom);
 exports.default = router;

@@ -45,4 +45,9 @@ router.post(
   validate(userValidation.follow),
   userController.unfollow
 );
+router.get(
+  '/getUsersNotInRoom',
+  isAuth,
+  userController.getUsersNotInRoom
+);
 export default router;

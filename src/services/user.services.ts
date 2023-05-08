@@ -48,6 +48,36 @@ const userService = {
       }
     }
   },
+  getUsersNotInRoom: async (paramsBody: any) => {
+    const { q, offset, limit, id_user, id_room } = paramsBody;
+    const users = await queryDb(`
+      select id_user,	id_role,	fullname,	username,	description,	phone,	email,	address,	birthday,	gender,	avatar,	cover from user 
+      where id_user <> '${id_user}' and (id_user = "${q}" or fullname like "%${q}%" or username like "%${q}%") and user.id_role = 2
+      and id_user not in (select user_room.id_user from user_room where id_room = "${id_room}")
+      order by fullname desc
+      limit ${limit} offset ${offset}
+      `
+    )
+    console.log(`
+      select id_user,	id_role,	fullname,	username,	description,	phone,	email,	address,	birthday,	gender,	avatar,	cover from user 
+      where id_user <> '${id_user}' and (id_user = "${q}" or fullname like "%${q}%" or username like "%${q}%") and user.id_role = 2
+      and id_user not in (select user_room.id_user from user_room where id_room = "${id_room}")
+      order by fullname desc
+      limit ${limit} offset ${offset}
+      `)
+    if (_.isEmpty(users)) {
+      return {
+        users,
+        messages: 'No account !'
+      }
+    }
+    else {
+      return {
+        users,
+        messages: 'Search success !'
+      }
+    }
+  },
   getUserSuggests: async (paramsBody: any) => {
     const { offset, limit, id_user } = paramsBody;
     const users = await queryDb(`
