@@ -89,12 +89,14 @@ const messageController = {
             const { message, chat, avatar, date } = yield message_services_1.default.deleteUser({
                 id_room, id_user, id_owner
             });
-            __1.io.to(id_room).emit('delete_member', { id_user, id_room, message, chat, avatar, date });
+            if (id_owner) {
+                __1.io.to(id_room).emit('delete_member', { id_user, id_room, message, chat, avatar, date });
+            }
             const userSocket = __1.userSockets[id_user];
             if (userSocket) {
                 userSocket.leave(id_room);
             }
-            return res.status(http_status_1.default.CREATED).send(message);
+            return res.status(http_status_1.default.CREATED).send({ message, id_room, id_owner });
         }
         catch (error) {
             next(error);
@@ -104,7 +106,7 @@ const messageController = {
         const { users, id_room, id_user } = req.body;
         try {
             if (users) {
-                const { message, chats, limit, room } = yield message_services_1.default.addMembers({
+                const { message, chats, limit, room, newUsers } = yield message_services_1.default.addMembers({
                     users, id_room, id_user
                 });
                 users.forEach((user) => {
@@ -113,8 +115,8 @@ const messageController = {
                         userSocket.join(id_room);
                     }
                 });
-                __1.io.to(id_room).emit('add_members', { users, id_room, message, chats, limit, room });
-                return res.status(http_status_1.default.CREATED).send({ id_room, message, chats, limit });
+                __1.io.to(id_room).emit('add_members', { users: newUsers, id_room, message, chats, limit, room });
+                return res.status(http_status_1.default.CREATED).send({ id_room, message, chats, limit, users });
             }
         }
         catch (error) {

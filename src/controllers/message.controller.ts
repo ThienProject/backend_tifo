@@ -83,13 +83,14 @@ const messageController = {
       const { message, chat, avatar, date } = await messageServices.deleteUser({
         id_room, id_user, id_owner
       })
-
-      io.to(id_room).emit('delete_member', { id_user, id_room, message, chat, avatar, date })
+      if (id_owner) {
+        io.to(id_room).emit('delete_member', { id_user, id_room, message, chat, avatar, date })
+      }
       const userSocket = userSockets[id_user];
       if (userSocket) {
         userSocket.leave(id_room);
       }
-      return res.status(httpStatus.CREATED).send(message);
+      return res.status(httpStatus.CREATED).send({ message, id_room, id_owner });
     } catch (error) {
       next(error);
     }
@@ -100,7 +101,7 @@ const messageController = {
     } = req.body;
     try {
       if (users) {
-        const { message, chats, limit, room } = await messageServices.addMembers({
+        const { message, chats, limit, room, newUsers } = await messageServices.addMembers({
           users, id_room, id_user
         })
         users.forEach((user: { id_user: string, isOwner?: boolean }) => {
@@ -109,8 +110,8 @@ const messageController = {
             userSocket.join(id_room);
           }
         })
-        io.to(id_room).emit('add_members', { users, id_room, message, chats, limit, room })
-        return res.status(httpStatus.CREATED).send({ id_room, message, chats, limit });
+        io.to(id_room).emit('add_members', { users: newUsers, id_room, message, chats, limit, room })
+        return res.status(httpStatus.CREATED).send({ id_room, message, chats, limit, users });
       }
 
     } catch (error) {

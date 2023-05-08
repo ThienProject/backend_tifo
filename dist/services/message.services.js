@@ -105,38 +105,39 @@ const messageService = {
         return { id_room, chat: newChat, date, avatar };
     }),
     addMembers: ({ users, id_room, id_user }) => __awaiter(void 0, void 0, void 0, function* () {
-        if (id_room) {
-            let sqlUserRoom = 'insert into user_room (id_user_room, id_user, id_room, role) values';
-            let sqlActions = `insert into chat (id_user_room, type, id_affected) values`;
-            users.forEach((user) => {
-                const id_user_room = (0, uniqid_1.default)('RU_').toUpperCase();
-                let role = 2;
-                if (user.isOwner) {
-                    role = 1;
-                }
-                sqlUserRoom += `("${id_user_room}", "${user.id_user}","${id_room}",${role}),`;
-                sqlActions += `((select user_room.id_user_room from user_room where id_room = '${id_room}' and id_user = '${id_user}'), "add", "${user.id_user}"),`;
-            });
-            sqlUserRoom = sqlUserRoom.substring(0, sqlUserRoom.length - 1);
-            sqlActions = sqlActions.substring(0, sqlActions.length - 1);
-            console.log(sqlActions);
-            const userRoom = yield (0, connectDB_1.default)(sqlUserRoom);
-            if (userRoom.insertId >= 0) {
-                const chat_actions = yield (0, connectDB_1.default)(sqlActions);
-                const { chats, room } = yield messageService.getChatsByIDRoom({ id_room, id_user, limit: users.length });
-                return {
-                    chats: chats,
-                    limit: users.length,
-                    room,
-                    message: 'add members success !'
-                };
+        let sqlUserRoom = 'insert into user_room (id_user_room, id_user, id_room, role) values';
+        let sqlActions = `insert into chat (id_user_room, type, id_affected) values`;
+        let sqlGetUserNew = 'select user.id_user, user.username, user.avatar, user.fullname from user where ';
+        users.forEach((user) => {
+            const id_user_room = (0, uniqid_1.default)('RU_').toUpperCase();
+            let role = 2;
+            if (user.isOwner) {
+                role = 1;
             }
-            else {
-                throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "`add members fail !");
-            }
+            sqlUserRoom += `("${id_user_room}", "${user.id_user}","${id_room}",${role}),`;
+            sqlActions += `((select user_room.id_user_room from user_room where id_room = '${id_room}' and id_user = '${id_user}'), "add", "${user.id_user}"),`;
+            sqlGetUserNew += `id_user = "${user.id_user}" or `;
+        });
+        sqlUserRoom = sqlUserRoom.substring(0, sqlUserRoom.length - 1);
+        sqlActions = sqlActions.substring(0, sqlActions.length - 1);
+        sqlGetUserNew = sqlGetUserNew.substring(0, sqlGetUserNew.length - 3);
+        console.log(sqlActions);
+        const userRoom = yield (0, connectDB_1.default)(sqlUserRoom);
+        if (userRoom.insertId >= 0) {
+            yield (0, connectDB_1.default)(sqlActions);
+            const { chats, room } = yield messageService.getChatsByIDRoom({ id_room, id_user, limit: users.length });
+            const newUsers = yield (0, connectDB_1.default)(sqlGetUserNew);
+            return {
+                chats: chats,
+                limit: users.length,
+                newUsers,
+                room,
+                message: 'add members success !'
+            };
         }
-        const { date, avatar, newChat } = yield getChatRecent();
-        return { id_room, chat: newChat, date, avatar };
+        else {
+            throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "`add members fail !");
+        }
     }),
     getUsersByIDRoom: (paramsBody) => __awaiter(void 0, void 0, void 0, function* () {
         const { id_room } = paramsBody;
@@ -285,14 +286,20 @@ const messageService = {
         const { id_room, id_user, id_owner } = body;
         const clearChats = yield (0, connectDB_1.default)(`DELETE from user_room where user_room.id_user = "${id_user}" and user_room.id_room = "${id_room}"`);
         if (clearChats.insertId >= 0) {
-            const sqlChat = `insert into chat (id_user_room, type, id_affected) values ((select user_room.id_user_room from user_room where id_room = '${id_room}' and id_user = "${id_owner}"), "remove", "${id_user}" );`;
-            const roomChat = yield (0, connectDB_1.default)(sqlChat);
-            if ((roomChat.insertId >= 0)) {
-                const { date, avatar, newChat } = yield getChatRecent();
-                return { id_room, chat: newChat, date, avatar, message: 'Delete room success !' };
+            if (id_owner) {
+                const sqlChat = `insert into chat (id_user_room, type, id_affected) values ((select user_room.id_user_room from user_room where id_room = '${id_room}' and id_user = "${id_owner}"), "remove", "${id_user}" );`;
+                console.log(sqlChat);
+                const roomChat = yield (0, connectDB_1.default)(sqlChat);
+                if ((roomChat.insertId >= 0)) {
+                    const { date, avatar, newChat } = yield getChatRecent();
+                    return { id_room, chat: newChat, date, avatar, message: 'Delete room success !' };
+                }
+                else {
+                    throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'Delete room failed, please try again later!');
+                }
             }
             else {
-                throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'Delete room failed, please try again later!');
+                return { id_room, message: 'Delete room success !' };
             }
         }
         else {
@@ -301,7 +308,7 @@ const messageService = {
     }),
     getChatsByIDRoom: (query) => __awaiter(void 0, void 0, void 0, function* () {
         const { id_user, id_room, limit, offset } = query;
-        const sql = `select chat.*, room.type as room_type, room.id_room, room.name, room.avatar,
+        const sql = `select chat.*, room.type as room_type, room.id_room, room.name, room.avatar as room_avatar,
                   chat_affected.username as affected_username, user.id_user, user.fullname, user.username, user.avatar from 
               chat 
               LEFT JOIN user_room ON chat.id_user_room = user_room.id_user_room
@@ -316,7 +323,7 @@ const messageService = {
         const rows = yield (0, connectDB_1.default)(sql);
         const chats = rows.reverse();
         if (chats.length > 0) {
-            const { room_type: type, id_room, name, avatar } = chats[0];
+            const { room_type: type, id_room, name, avatar, room_avatar } = chats[0];
             const newChats = chats.reduce((previousValue, currentValue) => {
                 const currentDate = currentValue.datetime;
                 const year = currentDate.getFullYear();
@@ -337,7 +344,7 @@ const messageService = {
             }, []);
             return {
                 chats: newChats,
-                room: { type, id_room, name, avatar },
+                room: { type, id_room, name, avatar: room_avatar },
                 message: "Get chats success!"
             };
         }
