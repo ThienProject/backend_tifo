@@ -8,6 +8,8 @@ import { io, userSockets } from '..';
 
 var _ = require('lodash');
 var bcrypt = require('bcrypt');
+const fs = require('fs');
+const path = require('path');
 const saltRounds = 10;
 
 const authService = {
@@ -69,6 +71,106 @@ const authService = {
       )
     }
   },
+  updateInfo: async (body: IUser) => {
+    const { id_user, email, phone, fullname, username, description, birthday, gender } = body;
+    const check: any = await queryDb(`(select username, email, phone from user WHERE id_user = null)
+      UNION (select username, '', '' from user where (username = '${username}') and id_user <>'${id_user}') 
+      UNION (select '', email,'' from user where ( email =  '${email}') and id_user <> '${id_user}')
+      UNION (select '','',phone from user where (phone ='') and id_user <> '${id_user}')`);
+    if (!_.isEmpty(check)) {
+      const rules: any[] = [];
+      check.forEach((error: any) => {
+        if (error.email) {
+          rules.push('email')
+        }
+        if (error.username) {
+          rules.push('username')
+        }
+        if (error.phone) {
+          rules.push('phone')
+        }
+      })
+      return {
+        rules: rules,
+        message: "duplicate"
+      }
+    };
+    const row: any = await queryDb(`update user set email = "${email}", phone = "${phone}", fullname = "${fullname}", username  = "${username}", description  = "${description}", birthday  = "${birthday}", gender = '${gender}' where id_user = '${id_user}'`);
+    if (row.insertId < 0) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST, 'Update fail!');
+    }
+    else {
+      const { user } = await authService.getMe(id_user!);
+      if (_.isEmpty(user)) {
+        throw new ApiError(
+          httpStatus.BAD_REQUEST, 'can not find user!');
+      } else {
+        return {
+          user,
+          message: 'update info success!'
+        }
+      }
+    }
+  },
+  updatePassword: async (body: any) => {
+    const { id_user, password, currentPassword } = body;
+    const row: any = await queryDb(`select * from user where id_user ="${id_user}"`);
+    if (_.isEmpty(row)) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST, 'User does not exist');
+    }
+    const user = row[0];
+    const match = await bcrypt.compare(currentPassword, user.password.trim());
+    if (match) {
+      const hashPassword = await bcrypt.hash(password, saltRounds);
+      const changePass: any = await queryDb(`update user set password  = "${hashPassword}" where id_user = '${id_user}'`);
+      if (changePass.insertId < 0) {
+        throw new ApiError(
+          httpStatus.BAD_REQUEST, 'invalid');
+      }
+      else {
+        return {
+          message: 'update password success!'
+        }
+      }
+    }
+    else {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST, 'invalid'
+      )
+    }
+
+  },
+  updateImage: async (body: any) => {
+    const { image, type, id_user } = body;
+    const oldImage: any = await queryDb(`select ${type} from user where id_user = '${id_user}'`);
+    if (!_.isEmpty(oldImage)) {
+      console.log(oldImage[0][type])
+      const imagePath = path.join(__dirname, '../../src/public/users', oldImage[0][type]);
+      if (fs.existsSync(imagePath)) {
+        // Sử dụng phương thức unlink để xóa tập tin
+        await fs.unlink(imagePath, (err: any) => {
+          if (err) {
+            return {
+              message: err
+            }
+          }
+        });
+      } else {
+        console.log("can't find out file in server " + " in " + imagePath)
+      }
+    }
+    const row: any = await queryDb(`update user set ${type} = '${image.filename}' where id_user = '${id_user}'`);
+    if (_.isEmpty(row)) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST, 'User does not exist');
+    }
+    else {
+      const { user } = await authService.getMe(id_user!);
+      return { message: 'ok', user }
+    }
+  },
   updateInvisible: async (body: IUser) => {
     const { id_user, invisible } = body;
     const row: any = await queryDb(`update user set invisible = '${invisible}' where id_user = '${id_user}'`);
@@ -80,8 +182,8 @@ const authService = {
       return { message: 'ok' }
     }
   },
-  getMe: async (email: string) => {
-    const rows: any = await queryDb(`select * from user where email="${email}"`);
+  getMe: async (id_user: string) => {
+    const rows: any = await queryDb(`select * from user where id_user="${id_user}"`);
     if (_.isEmpty(rows))
       throw new ApiError(
         httpStatus.BAD_REQUEST,

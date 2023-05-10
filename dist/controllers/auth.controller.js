@@ -18,9 +18,9 @@ const http_status_1 = __importDefault(require("http-status"));
 const authController = {
     getMe: function (req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { email } = req.body;
+            const { id_user } = req.body;
             try {
-                const { user, message } = yield auth_services_1.default.getMe(email);
+                const { user, message } = yield auth_services_1.default.getMe(id_user);
                 if (user) {
                     res.send({
                         user, message
@@ -85,6 +85,58 @@ const authController = {
                     accessToken,
                     refreshToken
                 });
+            }
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
+    updateInfo: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const { id_user, email, phone, fullname, username, description, birthday, gender } = req.body;
+        try {
+            const { user, message, rules } = yield auth_services_1.default.updateInfo({ id_user, email, phone, fullname, username, description, birthday, gender });
+            if (user) {
+                const { accessToken, refreshToken } = (0, JWT_1.generateToken)(user);
+                res.status(http_status_1.default.OK).send({
+                    user, message, accessToken, refreshToken
+                });
+            }
+            if (rules) {
+                res.status(http_status_1.default.OK).send({
+                    message, rules
+                });
+            }
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
+    updatePassword: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const { id_user, password, currentPassword } = req.body;
+        try {
+            const { message } = yield auth_services_1.default.updatePassword({ id_user, password, currentPassword });
+            if (message) {
+                res.status(http_status_1.default.OK).send({
+                    message
+                });
+            }
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
+    updateImage: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const { type, id_user } = req.body;
+        const image = req.file;
+        try {
+            const { message, user } = yield auth_services_1.default.updateImage({ image, type, id_user });
+            if (message) {
+                if (user) {
+                    const { accessToken, refreshToken } = (0, JWT_1.generateToken)(user);
+                    res.status(http_status_1.default.OK).send({
+                        user, message, accessToken, refreshToken, user_image: image === null || image === void 0 ? void 0 : image.filename, type
+                    });
+                }
             }
         }
         catch (error) {

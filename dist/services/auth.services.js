@@ -30,6 +30,8 @@ const http_status_1 = __importDefault(require("http-status"));
 const __1 = require("..");
 var _ = require('lodash');
 var bcrypt = require('bcrypt');
+const fs = require('fs');
+const path = require('path');
 const saltRounds = 10;
 const authService = {
     register: (body) => __awaiter(void 0, void 0, void 0, function* () {
@@ -77,6 +79,101 @@ const authService = {
             throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'Password incorrect');
         }
     }),
+    updateInfo: (body) => __awaiter(void 0, void 0, void 0, function* () {
+        const { id_user, email, phone, fullname, username, description, birthday, gender } = body;
+        const check = yield (0, connectDB_1.default)(`(select username, email, phone from user WHERE id_user = null)
+      UNION (select username, '', '' from user where (username = '${username}') and id_user <>'${id_user}') 
+      UNION (select '', email,'' from user where ( email =  '${email}') and id_user <> '${id_user}')
+      UNION (select '','',phone from user where (phone ='') and id_user <> '${id_user}')`);
+        if (!_.isEmpty(check)) {
+            const rules = [];
+            check.forEach((error) => {
+                if (error.email) {
+                    rules.push('email');
+                }
+                if (error.username) {
+                    rules.push('username');
+                }
+                if (error.phone) {
+                    rules.push('phone');
+                }
+            });
+            return {
+                rules: rules,
+                message: "duplicate"
+            };
+        }
+        ;
+        const row = yield (0, connectDB_1.default)(`update user set email = "${email}", phone = "${phone}", fullname = "${fullname}", username  = "${username}", description  = "${description}", birthday  = "${birthday}", gender = '${gender}' where id_user = '${id_user}'`);
+        if (row.insertId < 0) {
+            throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'Update fail!');
+        }
+        else {
+            const { user } = yield authService.getMe(id_user);
+            if (_.isEmpty(user)) {
+                throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'can not find user!');
+            }
+            else {
+                return {
+                    user,
+                    message: 'update info success!'
+                };
+            }
+        }
+    }),
+    updatePassword: (body) => __awaiter(void 0, void 0, void 0, function* () {
+        const { id_user, password, currentPassword } = body;
+        const row = yield (0, connectDB_1.default)(`select * from user where id_user ="${id_user}"`);
+        if (_.isEmpty(row)) {
+            throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'User does not exist');
+        }
+        const user = row[0];
+        const match = yield bcrypt.compare(currentPassword, user.password.trim());
+        if (match) {
+            const hashPassword = yield bcrypt.hash(password, saltRounds);
+            const changePass = yield (0, connectDB_1.default)(`update user set password  = "${hashPassword}" where id_user = '${id_user}'`);
+            if (changePass.insertId < 0) {
+                throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'invalid');
+            }
+            else {
+                return {
+                    message: 'update password success!'
+                };
+            }
+        }
+        else {
+            throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'invalid');
+        }
+    }),
+    updateImage: (body) => __awaiter(void 0, void 0, void 0, function* () {
+        const { image, type, id_user } = body;
+        const oldImage = yield (0, connectDB_1.default)(`select ${type} from user where id_user = '${id_user}'`);
+        if (!_.isEmpty(oldImage)) {
+            console.log(oldImage[0][type]);
+            const imagePath = path.join(__dirname, '../../src/public/users', oldImage[0][type]);
+            if (fs.existsSync(imagePath)) {
+                // Sử dụng phương thức unlink để xóa tập tin
+                yield fs.unlink(imagePath, (err) => {
+                    if (err) {
+                        return {
+                            message: err
+                        };
+                    }
+                });
+            }
+            else {
+                console.log("can't find out file in server " + " in " + imagePath);
+            }
+        }
+        const row = yield (0, connectDB_1.default)(`update user set ${type} = '${image.filename}' where id_user = '${id_user}'`);
+        if (_.isEmpty(row)) {
+            throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'User does not exist');
+        }
+        else {
+            const { user } = yield authService.getMe(id_user);
+            return { message: 'ok', user };
+        }
+    }),
     updateInvisible: (body) => __awaiter(void 0, void 0, void 0, function* () {
         const { id_user, invisible } = body;
         const row = yield (0, connectDB_1.default)(`update user set invisible = '${invisible}' where id_user = '${id_user}'`);
@@ -87,8 +184,8 @@ const authService = {
             return { message: 'ok' };
         }
     }),
-    getMe: (email) => __awaiter(void 0, void 0, void 0, function* () {
-        const rows = yield (0, connectDB_1.default)(`select * from user where email="${email}"`);
+    getMe: (id_user) => __awaiter(void 0, void 0, void 0, function* () {
+        const rows = yield (0, connectDB_1.default)(`select * from user where id_user="${id_user}"`);
         if (_.isEmpty(rows))
             throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "Can't find out user account!");
         else {

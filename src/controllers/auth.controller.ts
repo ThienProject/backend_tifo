@@ -4,9 +4,9 @@ import { generateToken } from '../middleware/auth/JWT'
 import httpStatus from 'http-status';
 const authController = {
   getMe: async function (req: Request, res: Response, next: NextFunction) {
-    const { email } = req.body;
+    const { id_user } = req.body;
     try {
-      const { user, message } = await authService.getMe(email);
+      const { user, message } = await authService.getMe(id_user);
       if (user) {
         res.send({
           user, message
@@ -68,6 +68,55 @@ const authController = {
           accessToken,
           refreshToken
         })
+      }
+    } catch (error) {
+      next(error);
+    }
+  },
+  updateInfo: async (req: Request, res: Response, next: NextFunction) => {
+    const { id_user, email, phone, fullname, username, description, birthday, gender } = req.body;
+    try {
+      const { user, message, rules } = await authService.updateInfo({ id_user, email, phone, fullname, username, description, birthday, gender });
+      if (user) {
+        const { accessToken, refreshToken } = generateToken(user);
+        res.status(httpStatus.OK).send({
+          user, message, accessToken, refreshToken
+        })
+      }
+      if (rules) {
+        res.status(httpStatus.OK).send({
+          message, rules
+        })
+      }
+    } catch (error) {
+      next(error);
+    }
+  },
+  updatePassword: async (req: Request, res: Response, next: NextFunction) => {
+    const { id_user, password, currentPassword } = req.body;
+    try {
+      const { message } = await authService.updatePassword({ id_user, password, currentPassword });
+      if (message) {
+        res.status(httpStatus.OK).send({
+          message
+        })
+      }
+    } catch (error) {
+      next(error);
+    }
+  },
+  updateImage: async (req: Request, res: Response, next: NextFunction) => {
+    const { type, id_user } = req.body;
+    const image = req.file;
+    try {
+      const { message, user } = await authService.updateImage({ image, type, id_user });
+      if (message) {
+        if (user) {
+          const { accessToken, refreshToken } = generateToken(user);
+          res.status(httpStatus.OK).send({
+            user, message, accessToken, refreshToken, user_image: image?.filename, type
+          })
+        }
       }
     } catch (error) {
       next(error);
