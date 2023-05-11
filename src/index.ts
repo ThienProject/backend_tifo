@@ -28,7 +28,7 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 });
 app.use(
   cors({
-    origin: 'http://localhost:3000',
+    // origin: 'http://localhost:3000',
   })
 );
 
@@ -43,7 +43,7 @@ app.use(errorHandler);
 const server = require('http').createServer(app);
 export const io = require('socket.io')(server, {
   cors: {
-    origin: 'http://localhost:3000',
+    // origin: 'http://localhost:3000',
     methods: ["GET", "POST"]
   }
 });

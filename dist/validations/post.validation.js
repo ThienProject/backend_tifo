@@ -52,7 +52,8 @@ const postValidation = {
         body: joi_1.default.object().keys({
             id_post: joi_1.default.string().required(),
             id_user: joi_1.default.string().required(),
-            isLove: joi_1.default.boolean().required()
+            isLove: joi_1.default.boolean().required(),
+            type: joi_1.default.string().allow(null)
         }),
     },
     getPosts: {
@@ -60,6 +61,7 @@ const postValidation = {
             id_user: joi_1.default.string().allow(null).allow(''),
             limit: joi_1.default.number().required(),
             offset: joi_1.default.number().required(),
+            type: joi_1.default.string().allow(null)
         }),
     },
     getPostByID: {

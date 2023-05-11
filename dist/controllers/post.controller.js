@@ -37,6 +37,7 @@ const postController = {
             const { posts, message } = yield post_services_1.default.getPosts(query);
             if (posts) {
                 return res.status(http_status_1.default.OK).send({
+                    type: query.type,
                     posts: posts,
                     message: message
                 });

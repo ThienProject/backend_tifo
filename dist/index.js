@@ -42,7 +42,7 @@ app.use((err, req, res, next) => {
     }
 });
 app.use((0, cors_1.default)({
-    origin: 'http://localhost:3000',
+// origin: 'http://localhost:3000',
 }));
 // v1 api routes
 app.use('/api/v1', routes_1.default);
@@ -54,7 +54,7 @@ app.use(error_1.errorHandler);
 const server = require('http').createServer(app);
 exports.io = require('socket.io')(server, {
     cors: {
-        origin: 'http://localhost:3000',
+        // origin: 'http://localhost:3000',
         methods: ["GET", "POST"]
     }
 });

@@ -28,6 +28,7 @@ const postController = {
       const { posts, message } = await postService.getPosts(query);
       if (posts) {
         return res.status(httpStatus.OK).send({
+          type: query.type,
           posts: posts,
           message: message
         })

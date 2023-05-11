@@ -52,7 +52,8 @@ const postValidation = {
     body: Joi.object().keys({
       id_post: Joi.string().required(),
       id_user: Joi.string().required(),
-      isLove: Joi.boolean().required()
+      isLove: Joi.boolean().required(),
+      type: Joi.string().allow(null)
     }),
   },
   getPosts: {
@@ -60,6 +61,7 @@ const postValidation = {
       id_user: Joi.string().allow(null).allow(''),
       limit: Joi.number().required(),
       offset: Joi.number().required(),
+      type: Joi.string().allow(null)
     }),
   },
   getPostByID: {
