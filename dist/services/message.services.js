@@ -1,4 +1,27 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -13,7 +36,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const uniqid_1 = __importDefault(require("uniqid"));
-const connectDB_1 = __importDefault(require("../configs/connectDB"));
+const connectDB_1 = __importStar(require("../configs/connectDB"));
 const ApiError_1 = __importDefault(require("../utils/ApiError"));
 const http_status_1 = __importDefault(require("http-status"));
 const connectGPT_1 = require("../configs/connectGPT");
@@ -48,7 +71,9 @@ const getChatRecent = () => __awaiter(void 0, void 0, void 0, function* () {
                   LEFT JOIN room ON user_room.id_room = room.id_room
                   LEFT JOIN user ON user.id_user = user_room.id_user
                   left join (select chat.id_chat, user.* from user, chat where chat.id_chat = LAST_INSERT_ID() and chat.id_affected = user.id_user ) as chat_affected on chat_affected.id_chat = chat.id_chat
-                  WHERE chat.id_chat = LAST_INSERT_ID();`);
+                  WHERE chat.id_chat = LAST_INSERT_ID()
+                  order by chat.datetime
+                  ;`);
     const newChat = chat[0];
     const currentDate = newChat.datetime;
     const year = currentDate.getFullYear();
@@ -361,9 +386,9 @@ const messageService = {
         if (id_room) {
             const sql = `INSERT INTO chat (id_user_room, message)
                   VALUES ((SELECT id_user_room FROM user_room 
-                  WHERE id_room = "${id_room}" AND id_user = "${id_me}"), "${message === null || message === void 0 ? void 0 : message.replaceAll('"', '""')}");
+                  WHERE id_room = "${id_room}" AND id_user = "${id_me}"), ?);
                   `;
-            chat = yield (0, connectDB_1.default)(sql);
+            chat = yield (0, connectDB_1.executeDb)(sql, [message]);
         }
         if (chat.insertId >= 0) {
             const { newChat, date, id_room } = yield getChatRecent();
@@ -493,12 +518,14 @@ const messageService = {
             throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, error);
         }
         if (id_room && responseGPT) {
-            const sql = `INSERT INTO chat (id_user_room, message)
-                  VALUES ((SELECT id_user_room FROM user_room
-                  WHERE id_room = "${id_room}" AND id_user = "${idGPT}"), "${responseGPT}"), ((SELECT id_user_room FROM user_room 
-                  WHERE id_room = "${id_room}" AND id_user = "${id_me}"), "${message}")
-                  ;
+            const sql = `INSERT INTO chat (id_user_room, message, datetime)
+                  VALUES 
+                  ((SELECT id_user_room FROM user_room
+                  WHERE id_room = "${id_room}" AND id_user = "${idGPT}"), "${responseGPT}",(DATE_ADD(NOW(), INTERVAL 1 SECOND))),
+                  ((SELECT id_user_room FROM user_room
+                  WHERE id_room = "${id_room}" AND id_user = "${id_me}"), "${message}", (NOW()));
                   `;
+            console.log(sql);
             chat = yield (0, connectDB_1.default)(sql);
         }
         if (chat && chat.insertId >= 0) {

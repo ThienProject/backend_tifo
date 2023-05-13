@@ -46,6 +46,12 @@ router.post(
   postController.updateLove
 );
 router.post(
+  '/updateSave',
+  isAuth,
+  validate(postValidation.updateSave),
+  postController.updateSave
+);
+router.post(
   '/replaceMedias',
   isAuth,
   upload("medias").array('medias', 12),

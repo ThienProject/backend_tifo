@@ -23,7 +23,7 @@ async function queryDb(query: any) {
     connection.release();
   }
 }
-async function executeDb(query: any, values: []) {
+export async function executeDb(query: any, values: any[]) {
   const connection = await pool.getConnection();
   try {
     const [rows] = await connection.execute<RowDataPacket[]>(query, values);

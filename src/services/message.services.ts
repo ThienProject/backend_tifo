@@ -1,5 +1,5 @@
 import uniqid from 'uniqid';
-import queryDb from '../configs/connectDB';
+import queryDb, { executeDb } from '../configs/connectDB';
 import ApiError from '../utils/ApiError';
 import httpStatus from 'http-status';
 import { IChat, IGetChatsByIDRoom, IGetRooms, IPayloadDleChats, IPayloadSearchRoom } from '../types/message';
@@ -37,7 +37,9 @@ const getChatRecent = async () => {
                   LEFT JOIN room ON user_room.id_room = room.id_room
                   LEFT JOIN user ON user.id_user = user_room.id_user
                   left join (select chat.id_chat, user.* from user, chat where chat.id_chat = LAST_INSERT_ID() and chat.id_affected = user.id_user ) as chat_affected on chat_affected.id_chat = chat.id_chat
-                  WHERE chat.id_chat = LAST_INSERT_ID();`)
+                  WHERE chat.id_chat = LAST_INSERT_ID()
+                  order by chat.datetime
+                  ;`)
   const newChat = chat[0];
   const currentDate = newChat.datetime;
   const year = currentDate.getFullYear();
@@ -356,9 +358,9 @@ const messageService = {
     if (id_room) {
       const sql = `INSERT INTO chat (id_user_room, message)
                   VALUES ((SELECT id_user_room FROM user_room 
-                  WHERE id_room = "${id_room}" AND id_user = "${id_me}"), "${message?.replaceAll('"', '""')}");
+                  WHERE id_room = "${id_room}" AND id_user = "${id_me}"), ?);
                   `;
-      chat = await queryDb(sql);
+      chat = await executeDb(sql, [message!]);
     }
     if (chat.insertId >= 0) {
       const { newChat, date, id_room } = await getChatRecent();
@@ -498,12 +500,14 @@ const messageService = {
       throw new ApiError(httpStatus.BAD_REQUEST, error);
     }
     if (id_room && responseGPT) {
-      const sql = `INSERT INTO chat (id_user_room, message)
-                  VALUES ((SELECT id_user_room FROM user_room
-                  WHERE id_room = "${id_room}" AND id_user = "${idGPT}"), "${responseGPT}"), ((SELECT id_user_room FROM user_room 
-                  WHERE id_room = "${id_room}" AND id_user = "${id_me}"), "${message}")
-                  ;
+      const sql = `INSERT INTO chat (id_user_room, message, datetime)
+                  VALUES 
+                  ((SELECT id_user_room FROM user_room
+                  WHERE id_room = "${id_room}" AND id_user = "${idGPT}"), "${responseGPT}",(DATE_ADD(NOW(), INTERVAL 1 SECOND))),
+                  ((SELECT id_user_room FROM user_room
+                  WHERE id_room = "${id_room}" AND id_user = "${id_me}"), "${message}", (NOW()));
                   `;
+      console.log(sql)
       chat = await queryDb(sql);
     }
     if (chat && chat.insertId >= 0) {

@@ -100,6 +100,32 @@ const userController = {
       next(error);
     }
   },
+  getFollowers: async (req: Request, res: Response, next: NextFunction) => {
+    const { id_user } = req.query;
+    try {
+      const { users, messages } = await userService.getFollowers({ id_user });
+      if (users) {
+        res.send({
+          users, messages
+        });
+      }
+    } catch (error) {
+      next(error);
+    }
+  },
+  getFollowings: async (req: Request, res: Response, next: NextFunction) => {
+    const { id_user } = req.query;
+    try {
+      const { users, messages } = await userService.getFollowings({ id_user });
+      if (users) {
+        res.send({
+          users, messages
+        });
+      }
+    } catch (error) {
+      next(error);
+    }
+  },
   getUserSuggests: async (req: Request, res: Response, next: NextFunction) => {
     const { offset, limit, id_user } = req.query;
     try {

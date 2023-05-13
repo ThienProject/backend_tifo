@@ -87,7 +87,7 @@ const postService = {
   },
   getSavesByIDUser: async (query: any) => {
     const { id_user, offset, limit } = query;
-    const sql = `SELECT post.* ,user.id_user, user.username, user.avatar, user.fullname from user, save, post where post.id_user = user.id_user and post.type ='post' and user.id_user = '${id_user}' and post.id_post = save.id_post and save.id_user = user.id_user limit ${limit} offset ${offset}`;
+    const sql = `SELECT post.* ,user.id_user, user.username, user.avatar, user.fullname from user, save, post where user.id_user = '${id_user}' and post.id_post = save.id_post and save.id_user = user.id_user limit ${limit} offset ${offset}`;
     const rows: any = await queryDb(sql)
     const posts = rows;
     for (let i = 0; i <= posts.length - 1; i++) {
@@ -231,6 +231,24 @@ const postService = {
       return {
         loves: loves,
         message: 'love post success !'
+      }
+    } else {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'love post failed, please try again later!');
+    }
+  },
+  updateSave: async (body: any) => {
+    const { id_post,
+      isSave,
+      id_user } = body;
+    let sql = isSave ? `insert into save(id_user, id_post) value ('${id_user}', '${id_post}')` : `delete from save where id_user = '${id_user}' and id_post = '${id_post}'`;
+    const row: any = await queryDb(sql);
+    if (row.insertId >= 0) {
+      let sql = `select count(id_user) as save from save where id_post =  '${id_post}'`
+      const row: any = await queryDb(sql);
+      const saves = row[0].save;
+      return {
+        saves: saves,
+        message: 'save post success !'
       }
     } else {
       throw new ApiError(httpStatus.BAD_REQUEST, 'love post failed, please try again later!');

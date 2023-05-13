@@ -150,6 +150,22 @@ const postController = {
             next(error);
         }
     }),
+    updateSave: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const { id_post, isSave, id_user } = req.body;
+        try {
+            const { message, saves } = yield post_services_1.default.updateSave({
+                id_post,
+                isSave,
+                id_user
+            });
+            return res.status(http_status_1.default.CREATED).send({
+                message, saves
+            });
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
     replaceMedias: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         const medias = req.files;
         try {

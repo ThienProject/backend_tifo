@@ -50,4 +50,12 @@ router.get(
   isAuth,
   userController.getUsersNotInRoom
 );
+router.get(
+  '/get/followings',
+  userController.getFollowings
+);
+router.get(
+  '/get/followers',
+  userController.getFollowers
+);
 export default router;

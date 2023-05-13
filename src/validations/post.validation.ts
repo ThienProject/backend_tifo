@@ -12,7 +12,7 @@ const postValidation = {
       Joi.object({
         filename: Joi.string().required(),
         mimetype: Joi.string().valid('image/png', 'image/jpg', 'image/jpeg', 'video/mp4', 'video/quicktime').required(),
-        size: Joi.number().max(10 * 1024 * 1024).required(), // 10MB
+        size: Joi.number().max(20 * 1024 * 1024).required(), // 10MB
         fieldname: Joi.string(),
         encoding: Joi.string(),
         path: Joi.string(),
@@ -53,6 +53,14 @@ const postValidation = {
       id_post: Joi.string().required(),
       id_user: Joi.string().required(),
       isLove: Joi.boolean().required(),
+      type: Joi.string().allow(null)
+    }),
+  },
+  updateSave: {
+    body: Joi.object().keys({
+      id_post: Joi.string().required(),
+      id_user: Joi.string().required(),
+      isSave: Joi.boolean().required(),
       type: Joi.string().allow(null)
     }),
   },

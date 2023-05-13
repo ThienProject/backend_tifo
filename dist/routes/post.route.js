@@ -16,6 +16,7 @@ router.delete('/delete', auth_middleware_1.isAuth, (0, validate_1.default)(post_
 router.get('/getPosts', (0, validate_1.default)(post_validation_1.default.getPosts), post_controller_1.default.getPosts);
 router.get('/getPostByID', (0, validate_1.default)(post_validation_1.default.getPostByID), post_controller_1.default.getPostByID);
 router.post('/updateLove', auth_middleware_1.isAuth, (0, validate_1.default)(post_validation_1.default.updateLove), post_controller_1.default.updateLove);
+router.post('/updateSave', auth_middleware_1.isAuth, (0, validate_1.default)(post_validation_1.default.updateSave), post_controller_1.default.updateSave);
 router.post('/replaceMedias', auth_middleware_1.isAuth, (0, upload_1.default)("medias").array('medias', 12), post_controller_1.default.replaceMedias);
 router.post('/deleteMedias', auth_middleware_1.isAuth, post_controller_1.default.deleteMedias);
 router.get('/getPostsByIDUser', (0, validate_1.default)(post_validation_1.default.getPosts), post_controller_1.default.getPostsByIDUser);

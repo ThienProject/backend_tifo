@@ -125,6 +125,34 @@ const userController = {
             next(error);
         }
     }),
+    getFollowers: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const { id_user } = req.query;
+        try {
+            const { users, messages } = yield user_services_1.default.getFollowers({ id_user });
+            if (users) {
+                res.send({
+                    users, messages
+                });
+            }
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
+    getFollowings: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const { id_user } = req.query;
+        try {
+            const { users, messages } = yield user_services_1.default.getFollowings({ id_user });
+            if (users) {
+                res.send({
+                    users, messages
+                });
+            }
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
     getUserSuggests: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         const { offset, limit, id_user } = req.query;
         try {

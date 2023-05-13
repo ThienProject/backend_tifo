@@ -30,11 +30,14 @@ const __1 = require("..");
 var _ = require('lodash');
 const userService = {
     getUser: ({ id_me, id_user }) => __awaiter(void 0, void 0, void 0, function* () {
-        const rows = yield (0, connectDB_1.default)(`select user.*, follow.status as follow
-    from user 
-    left join follow on follow.id_user = user.id_user 
-    				and  follow.id_follower ='${id_me}'
-    WHERE user.id_user='${id_user}'`);
+        const rows = yield (0, connectDB_1.default)(` select user.*,
+     follow.status as follow, followings.followings, followers.followers
+     from user
+     left join follow on follow.id_user = user.id_user
+     and  follow.id_follower ='${id_me}'
+     left JOIN (select id_user, COUNT(follow.id_follower) as  followers from follow where follow.status = 'accept' GROUP by id_user) as followers on 		followers.id_user = user.id_user
+     LEFT join (select id_follower, COUNT(follow.id_user)  as  followings from follow where follow.status = 'accept'  GROUP by id_follower) as  followings  		on	followings.id_follower = user.id_user
+     WHERE user.id_user='${id_user}'`);
         if (_.isEmpty(rows))
             throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "Can't find out user account!");
         else {
@@ -42,7 +45,7 @@ const userService = {
             const { password, address, birthday } = user, userRest = __rest(user, ["password", "address", "birthday"]);
             return {
                 user: userRest,
-                message: "Get me success!"
+                message: "Get user success!"
             };
         }
     }),
@@ -138,7 +141,7 @@ const userService = {
         const sql = `update follow set status = 'accept' where id_user = '${id_user}' and id_follower = '${id_follower}'`;
         const row = yield (0, connectDB_1.default)(sql);
         if (row.insertId >= 0) {
-            let sql = `select count(id_follower) as followers from follow where id_user =  '${id_user}'`;
+            let sql = `select count(id_follower) as followers from follow where id_user =  '${id_user}' and follow.status ='accept'`;
             const row = yield (0, connectDB_1.default)(sql);
             const followers = row[0].followers;
             return {
@@ -155,7 +158,7 @@ const userService = {
         const sql = `delete from follow where id_user = '${id_user}' and id_follower = '${id_follower}'`;
         const row = yield (0, connectDB_1.default)(sql);
         if (row.insertId >= 0) {
-            let sql = `select count(id_follower) as followers from follow where id_user =  '${id_user}'`;
+            let sql = `select count(id_follower) as followers from follow where id_user =  '${id_user}' and follow.status ='accept'`;
             const row = yield (0, connectDB_1.default)(sql);
             const followers = row[0].followers;
             return {
@@ -169,10 +172,10 @@ const userService = {
     }),
     rejectFollow: (body) => __awaiter(void 0, void 0, void 0, function* () {
         const { id_follower, id_user } = body;
-        const sql = `update follow set status = 'reject' where id_user = '${id_user}' and id_follower = '${id_follower}'`;
+        const sql = `delete from follow where id_user = '${id_user}' and id_follower = '${id_follower}'`;
         const row = yield (0, connectDB_1.default)(sql);
         if (row.insertId >= 0) {
-            let sql = `select count(id_follower) as followers from follow where id_user =  '${id_user}'`;
+            let sql = `select count(id_follower) as followers from follow where id_user =  '${id_user}' and follow.status ='accept'`;
             const row = yield (0, connectDB_1.default)(sql);
             const followers = row[0].followers;
             return {
@@ -220,6 +223,52 @@ const userService = {
         }
         catch (error) {
             console.log(error);
+        }
+    }),
+    getFollowers: (paramsBody) => __awaiter(void 0, void 0, void 0, function* () {
+        const { id_user } = paramsBody;
+        const users = yield (0, connectDB_1.default)(`
+      select user.id_user,	fullname, avatar,	username,	phone,	email
+      from user, follow 
+      where follow.id_user = '${id_user}' 
+      and follow.status = 'accept'
+      and user.id_user = follow.id_follower
+      order by  follow.datetime desc
+      `);
+        if (_.isEmpty(users)) {
+            return {
+                users,
+                messages: 'No follower !'
+            };
+        }
+        else {
+            return {
+                users,
+                messages: 'get followers success !'
+            };
+        }
+    }),
+    getFollowings: (paramsBody) => __awaiter(void 0, void 0, void 0, function* () {
+        const { id_user } = paramsBody;
+        const users = yield (0, connectDB_1.default)(`
+      select user.id_user,	id_role,	avatar, fullname,	username,	phone,	email
+      from user, follow 
+      where follow.id_follower = '${id_user}' 
+      and follow.status = 'accept'
+      and user.id_user = follow.id_user
+      order by follow.datetime desc
+      `);
+        if (_.isEmpty(users)) {
+            return {
+                users,
+                messages: 'No follower !'
+            };
+        }
+        else {
+            return {
+                users,
+                messages: 'get followers success !'
+            };
         }
     }),
 };

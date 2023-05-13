@@ -154,6 +154,26 @@ const postController = {
       next(error);
     }
   },
+  updateSave: async (req: Request, res: Response, next: NextFunction) => {
+    const {
+      id_post,
+      isSave,
+      id_user
+    } = req.body;
+
+    try {
+      const { message, saves } = await postService.updateSave({
+        id_post,
+        isSave,
+        id_user
+      })
+      return res.status(httpStatus.CREATED).send({
+        message, saves
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
   replaceMedias: async (req: Request, res: Response, next: NextFunction) => {
     const medias: any = req.files;
     try {
