@@ -33,9 +33,9 @@ const authController = {
         });
     },
     getNotifications: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-        const { id_user } = req.body;
+        const { id_user, limit, offset, time, category, sort } = req.body;
         try {
-            const { notifications, message } = yield auth_services_1.default.getNotifications(id_user);
+            const { notifications, message } = yield auth_services_1.default.getNotifications({ sort, id_user, limit, offset, time, category });
             if (notifications) {
                 res.send({
                     notifications, message

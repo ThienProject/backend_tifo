@@ -52,11 +52,12 @@ const userController = {
     },
     acceptFollow: function (req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { id_follower, id_user, id_noti } = req.body;
+            const { id_follower, id_user, id_noti, id_follow } = req.body;
             try {
                 const { message, followers } = yield user_services_1.default.acceptFollow({ id_follower, id_user });
                 if (message) {
                     if (id_noti) {
+                        yield auth_services_1.default.sendNotification({ id_follow, id_actor: id_user, id_user: id_follower, type: 'accept_follow' });
                         yield auth_services_1.default.removeNotification({ id_noti });
                     }
                     res.send({

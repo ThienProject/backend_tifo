@@ -16,6 +16,7 @@ const userValidation = {
             id_noti: joi_1.default.number().allow(null),
             id_follower: joi_1.default.string().required(),
             id_user: joi_1.default.string().required(),
+            id_follow: joi_1.default.number().allow(null),
         }),
     },
     getUsers: {

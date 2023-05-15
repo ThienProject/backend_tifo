@@ -42,8 +42,9 @@ function executeDb(query, values) {
     return __awaiter(this, void 0, void 0, function* () {
         const connection = yield pool.getConnection();
         try {
-            const [rows] = yield connection.execute(query, values);
-            return rows;
+            const [result] = yield connection.execute(query, values);
+            console.log({ result });
+            return result;
         }
         finally {
             connection.release();

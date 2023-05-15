@@ -17,9 +17,9 @@ const authController = {
     }
   },
   getNotifications: async (req: Request, res: Response, next: NextFunction) => {
-    const { id_user } = req.body;
+    const { id_user, limit, offset, time, category, sort } = req.body;
     try {
-      const { notifications, message } = await authService.getNotifications(id_user);
+      const { notifications, message } = await authService.getNotifications({ sort, id_user, limit, offset, time, category });
       if (notifications) {
         res.send({
           notifications, message

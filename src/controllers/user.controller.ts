@@ -34,11 +34,12 @@ const userController = {
   }
   ,
   acceptFollow: async function (req: Request, res: Response, next: NextFunction) {
-    const { id_follower, id_user, id_noti } = req.body;
+    const { id_follower, id_user, id_noti, id_follow } = req.body;
     try {
       const { message, followers } = await userService.acceptFollow({ id_follower, id_user });
       if (message) {
         if (id_noti) {
+          await authService.sendNotification({ id_follow, id_actor: id_user, id_user: id_follower, type: 'accept_follow' })
           await authService.removeNotification({ id_noti })
         }
         res.send({

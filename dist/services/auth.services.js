@@ -197,10 +197,33 @@ const authService = {
             };
         }
     }),
-    getNotifications: (id_user) => __awaiter(void 0, void 0, void 0, function* () {
-        const notifications = yield (0, connectDB_1.default)(`select notification.*, user.fullname, user.avatar , user.username from notification
+    getNotifications: ({ id_user, limit, offset, time, category, sort }) => __awaiter(void 0, void 0, void 0, function* () {
+        let newTime = '';
+        switch (time) {
+            case 'today':
+                newTime += ' and DATE(notificaion.datetime) = CURDATE()';
+                break;
+            case 'year':
+                newTime = ' and YEAR(notificaion.datetime) = YEAR(CURDATE())';
+                break;
+            case 'week':
+                newTime = ' and YEAR(notificaion.datetime) = YEAR(CURDATE()) and WEEK(notificaion.datetime) = WEEK(CURDATE())';
+                break;
+            case 'month':
+                newTime = ' and YEAR(notificaion.datetime) = YEAR(CURDATE()) and MONTH(notificaion.datetime) = MONTH(CURDATE())';
+                break;
+            default:
+                newTime = '';
+                break;
+        }
+        const sql = `select notification.*, notification.id_follow,  user.fullname, user.avatar , user.username from notification
     LEFT JOIN user ON notification.id_actor = user.id_user
-    where notification.id_user="${id_user}"`);
+    where notification.id_user="${id_user}"
+    ${category === 'all' ? '' : `and notification.type = "${category}"`}
+     ${newTime}
+    order by  notification.datetime ${sort}
+    limit ${limit} offset ${offset} `;
+        const notifications = yield (0, connectDB_1.default)(sql);
         if (_.isEmpty(notifications))
             throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "Can't find out user account!");
         else {

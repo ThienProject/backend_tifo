@@ -3,7 +3,7 @@ import { IUser } from '../types/user';
 import queryDb from '../configs/connectDB';
 import ApiError from '../utils/ApiError';
 import httpStatus from 'http-status';
-import { INotification } from '../types/notification';
+import { INotification, IPayloadNoti } from '../types/notification';
 import { io, userSockets } from '..';
 
 var _ = require('lodash');
@@ -198,10 +198,24 @@ const authService = {
       }
     }
   },
-  getNotifications: async (id_user: string) => {
-    const notifications: any = await queryDb(`select notification.*, user.fullname, user.avatar , user.username from notification
+  getNotifications: async ({ id_user, limit, offset, time, category, sort }: IPayloadNoti) => {
+    let newTime = '';
+    switch (time) {
+      case 'today': newTime += ' and DATE(notificaion.datetime) = CURDATE()'; break;
+      case 'year': newTime = ' and YEAR(notificaion.datetime) = YEAR(CURDATE())'; break;
+      case 'week': newTime = ' and YEAR(notificaion.datetime) = YEAR(CURDATE()) and WEEK(notificaion.datetime) = WEEK(CURDATE())'; break
+      case 'month': newTime = ' and YEAR(notificaion.datetime) = YEAR(CURDATE()) and MONTH(notificaion.datetime) = MONTH(CURDATE())'; break
+      default: newTime = ''
+        break;
+    }
+    const sql = `select notification.*, notification.id_follow,  user.fullname, user.avatar , user.username from notification
     LEFT JOIN user ON notification.id_actor = user.id_user
-    where notification.id_user="${id_user}"`);
+    where notification.id_user="${id_user}"
+    ${category === 'all' ? '' : `and notification.type = "${category}"`}
+     ${newTime}
+    order by  notification.datetime ${sort}
+    limit ${limit} offset ${offset} `
+    const notifications: any = await queryDb(sql);
     if (_.isEmpty(notifications))
       throw new ApiError(
         httpStatus.BAD_REQUEST,

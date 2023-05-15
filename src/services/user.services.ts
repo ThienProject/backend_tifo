@@ -1,6 +1,6 @@
 import uniqid from 'uniqid';
 import { IUser } from '../types/user';
-import queryDb from '../configs/connectDB';
+import queryDb, { executeDb } from '../configs/connectDB';
 import ApiError from '../utils/ApiError';
 import httpStatus from 'http-status';
 import { io, userSockets } from '..';
@@ -123,12 +123,14 @@ const userService = {
   },
   acceptFollow: async (body: any) => {
     const { id_follower, id_user } = body;
-    const sql = `update follow set status = 'accept' where id_user = '${id_user}' and id_follower = '${id_follower}'`;
-    const row: any = await queryDb(sql);
+
+    const updateSql = `UPDATE follow SET status = 'accept' WHERE id_user = '${id_user}' AND id_follower = '${id_follower}'`;
+    const row: any = await executeDb(updateSql, []);
     if (row.insertId >= 0) {
-      let sql = `select count(id_follower) as followers from follow where id_user =  '${id_user}' and follow.status ='accept'`
-      const row: any = await queryDb(sql);
-      const followers = row[0].followers;
+      let sql = `select count(id_follower) as followers from follow where id_user =  '${id_user}' and follow.status ='accept'`;
+      const followerSQl: any = await queryDb(sql);
+      // console.log(row)
+      const followers = followerSQl[0].followers;
       return {
         followers: followers,
         message: 'accept follow success !'

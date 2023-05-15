@@ -8,3 +8,6 @@ export interface INotification {
   content?: string,
   type?: 'post_love' | 'follow' | 'accept_follow' | 'post_comment' | 'reply'
 }
+export interface IPayloadNoti {
+  id_user: string, limit: number, offset: number, time: string, category: string, sort: string,
+}
