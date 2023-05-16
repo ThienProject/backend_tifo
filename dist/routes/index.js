@@ -10,6 +10,7 @@ const post_route_1 = __importDefault(require("./post.route"));
 const comment_route_1 = __importDefault(require("./comment.route"));
 const room_route_1 = __importDefault(require("./room.route"));
 const chat_route_1 = __importDefault(require("./chat.route"));
+const admin_route_1 = __importDefault(require("./admin.route"));
 const router = express_1.default.Router();
 const defaultRoutes = [
     {
@@ -39,6 +40,10 @@ const defaultRoutes = [
     {
         path: '/chat',
         route: chat_route_1.default,
+    },
+    {
+        path: '/admin',
+        route: admin_route_1.default,
     },
 ];
 defaultRoutes.forEach((route) => {

@@ -5,6 +5,7 @@ import postRoute from './post.route'
 import commentRoute from './comment.route'
 import roomRoute from './room.route'
 import chatRoute from './chat.route'
+import adminRoute from './admin.route'
 const router = express.Router();
 const defaultRoutes = [
   {
@@ -34,6 +35,10 @@ const defaultRoutes = [
   {
     path: '/chat',
     route: chatRoute,
+  },
+  {
+    path: '/admin',
+    route: adminRoute,
   },
 ]
 defaultRoutes.forEach((route) => {
