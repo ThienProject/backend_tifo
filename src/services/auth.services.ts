@@ -17,7 +17,8 @@ const authService = {
     const { email, fullname, username, password } = body;
     const id_user = uniqid('USER_').toUpperCase();
     const id_role = 2;
-    let user = await queryDb(`select * from user where email="${email}"`);
+    let user = await queryDb(`select * from 
+    user where email="${email}"  `);
     if (!_.isEmpty(user)) {
       throw new ApiError(
         httpStatus.BAD_REQUEST,
@@ -51,7 +52,7 @@ const authService = {
   },
   login: async (body: IUser) => {
     const { email, password } = body;
-    const row: any = await queryDb(`select * from user where email ="${email}"`);
+    const row: any = await queryDb(`select * from user where  user.id_user not in (select banned.id_user from banned) and email ="${email}"`);
     if (_.isEmpty(row)) {
       throw new ApiError(
         httpStatus.BAD_REQUEST, 'User does not exist');

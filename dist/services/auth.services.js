@@ -38,7 +38,8 @@ const authService = {
         const { email, fullname, username, password } = body;
         const id_user = (0, uniqid_1.default)('USER_').toUpperCase();
         const id_role = 2;
-        let user = yield (0, connectDB_1.default)(`select * from user where email="${email}"`);
+        let user = yield (0, connectDB_1.default)(`select * from 
+    user where email="${email}"  `);
         if (!_.isEmpty(user)) {
             throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "This email already exists !");
         }
@@ -62,7 +63,7 @@ const authService = {
     }),
     login: (body) => __awaiter(void 0, void 0, void 0, function* () {
         const { email, password } = body;
-        const row = yield (0, connectDB_1.default)(`select * from user where email ="${email}"`);
+        const row = yield (0, connectDB_1.default)(`select * from user where  user.id_user not in (select banned.id_user from banned) and email ="${email}"`);
         if (_.isEmpty(row)) {
             throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'User does not exist');
         }

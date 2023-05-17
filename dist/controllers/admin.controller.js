@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const admin_services_1 = __importDefault(require("../services/admin.services"));
+const http_status_1 = __importDefault(require("http-status"));
 const authController = {
     getUsers: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         const { offset, limit, id_role, filters } = req.body;
@@ -21,6 +22,35 @@ const authController = {
             if (users) {
                 res.send({
                     users, total, messages
+                });
+            }
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
+    getPosts: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const { offset, limit, id_user, filters } = req.body;
+        try {
+            const { posts, total, message } = yield admin_services_1.default.getPosts({ offset, limit, id_user, filters });
+            if (posts) {
+                res.send({
+                    posts, total, message
+                });
+            }
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
+    getPost: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const query = req.body;
+        try {
+            const { post, message } = yield admin_services_1.default.getPost(query);
+            if (post) {
+                return res.status(http_status_1.default.OK).send({
+                    post: post,
+                    message: message
                 });
             }
         }

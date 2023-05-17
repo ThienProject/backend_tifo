@@ -19,5 +19,13 @@ router.post(
   '/user/get',
   adminController.getUserByID
 );
+router.post(
+  '/post/gets',
+  adminController.getPosts
+);
+router.post(
+  '/post/get',
+  adminController.getPost
+);
 
 export default router;

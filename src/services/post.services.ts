@@ -117,23 +117,26 @@ const postService = {
       FROM post
       LEFT JOIN save ON post.id_post = save.id_post
       LEFT JOIN user ON post.id_user = user.id_user
-      LEFT JOIN (SELECT love.id_post, love.id_user from love WHERE love.id_user = 					 '${id_user}' ) as LovePost ON post.id_post = LovePost.id_post
-      LEFT JOIN follow ON follow.id_user = post.id_user AND post.target = 'follower' AND 			  follow.id_follower = '${id_user}'
-                        OR post.target = 'public'
-      WHERE post.type = '${type}'
+      LEFT JOIN (SELECT love.id_post, love.id_user from love WHERE love.id_user =  '${id_user}' ) 
+      as LovePost ON post.id_post = LovePost.id_post
+      right JOIN follow ON follow.id_user = post.id_user AND (post.target = 'follower'
+       AND   follow.id_follower = '${id_user}' and follow.status ='accept')
+                        OR post.target = 'public' or post.id_user = '${id_user}'
+      WHERE post.type = '${type}' AND post.is_banned = 0 and post.id_user not in (select banned.id_user from banned)
       GROUP BY post.id_post
       ORDER BY post.date_time DESC
         LIMIT ${limit} OFFSET ${offset};`
-
       :
       `SELECT post.*, user.username, user.fullname, user.avatar, (SELECT COUNT(*) FROM love 	WHERE love.id_post = post.id_post) AS loves
         FROM post 
         LEFT JOIN user ON post.id_user = user.id_user 
         LEFT JOIN love ON love.id_post = post.id_post 
-        WHERE post.target = 'public' AND post.type = '${type}'
+        WHERE post.target = 'public' AND post.type = '${type}' AND post.is_banned = 0 and post.id_user not in (select banned.id_user from banned)
         GROUP BY post.id_post, user.id_user
         ORDER BY post.date_time DESC
         LIMIT ${limit} OFFSET ${offset};`;
+
+    console.log(sql);
     const rows: any = await queryDb(sql)
 
     const posts = rows;

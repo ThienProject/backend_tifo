@@ -13,4 +13,6 @@ const router = express_1.default.Router();
 // );
 router.post('/user/gets', admin_controller_1.default.getUsers);
 router.post('/user/get', admin_controller_1.default.getUserByID);
+router.post('/post/gets', admin_controller_1.default.getPosts);
+router.post('/post/get', admin_controller_1.default.getPost);
 exports.default = router;

@@ -14,7 +14,7 @@ const userService = {
      and  follow.id_follower ='${id_me}'
      left JOIN (select id_user, COUNT(follow.id_follower) as  followers from follow where follow.status = 'accept' GROUP by id_user) as followers on 		followers.id_user = user.id_user
      LEFT join (select id_follower, COUNT(follow.id_user)  as  followings from follow where follow.status = 'accept'  GROUP by id_follower) as  followings  		on	followings.id_follower = user.id_user
-     WHERE user.id_user='${id_user}'`);
+     WHERE user.id_user not in (select banned.id_user from banned)  and user.id_user='${id_user}'`);
 
     if (_.isEmpty(rows))
       throw new ApiError(
@@ -34,7 +34,9 @@ const userService = {
     const { q, offset, limit, id_user } = paramsBody;
     const users = await queryDb(`
       select id_user,	id_role,	fullname,	username,	description,	phone,	email,	address,	birthday,	gender,	avatar,	cover from user 
-      where id_user <> '${id_user}' and (id_user = "${q}" or fullname like "%${q}%" or username like "%${q}%") and user.id_role = 2
+      where id_user <> '${id_user}' 
+      and id_user not in (select banned.id_user from banned)
+      and (id_user = "${q}" or fullname like "%${q}%" or username like "%${q}%") and user.id_role = 2
       order by fullname desc
       limit ${limit} offset ${offset}
       `
