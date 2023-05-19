@@ -149,8 +149,7 @@ const authService = {
     updateImage: (body) => __awaiter(void 0, void 0, void 0, function* () {
         const { image, type, id_user } = body;
         const oldImage = yield (0, connectDB_1.default)(`select ${type} from user where id_user = '${id_user}'`);
-        if (!_.isEmpty(oldImage)) {
-            console.log(oldImage[0][type]);
+        if (!_.isEmpty(oldImage[0][type])) {
             const imagePath = path.join(__dirname, '../../src/public/users', oldImage[0][type]);
             if (fs.existsSync(imagePath)) {
                 // Sử dụng phương thức unlink để xóa tập tin

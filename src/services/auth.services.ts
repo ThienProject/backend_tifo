@@ -146,8 +146,7 @@ const authService = {
   updateImage: async (body: any) => {
     const { image, type, id_user } = body;
     const oldImage: any = await queryDb(`select ${type} from user where id_user = '${id_user}'`);
-    if (!_.isEmpty(oldImage)) {
-      console.log(oldImage[0][type])
+    if (!_.isEmpty(oldImage[0][type])) {
       const imagePath = path.join(__dirname, '../../src/public/users', oldImage[0][type]);
       if (fs.existsSync(imagePath)) {
         // Sử dụng phương thức unlink để xóa tập tin
