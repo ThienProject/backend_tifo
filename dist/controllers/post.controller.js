@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const post_services_1 = __importDefault(require("../services/post.services"));
 const http_status_1 = __importDefault(require("http-status"));
+const chatGPT_api_1 = require("../configs/chatGPT_api");
 const fs = require('fs');
 const postController = {
     getPostByID: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -211,6 +212,18 @@ const postController = {
         catch (error) {
             next(error);
         }
-    })
+    }),
+    getDescriptionAuto: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const { prompt } = req.body;
+        try {
+            const description = yield (0, chatGPT_api_1.sendMessage)(prompt);
+            return res.status(http_status_1.default.CREATED).send({
+                description
+            });
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
 };
 exports.default = postController;

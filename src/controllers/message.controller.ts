@@ -13,11 +13,13 @@ const messageController = {
     const query: IGetChatsByIDRoom = req.query;
     const id_room = query.id_room;
     try {
-      const { chats, message } = await messageServices.getChatsByIDRoom(query);
+      const { chats, message, room } = await messageServices.getChatsByIDRoom(query);
+      // console.log(room)
       if (chats) {
         return res.status(httpStatus.OK).send({
           chats: chats,
           id_room,
+          room,
           message: message
         })
       }

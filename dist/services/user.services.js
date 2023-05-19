@@ -297,5 +297,20 @@ const userService = {
             };
         }
     }),
+    reportPost: (body) => __awaiter(void 0, void 0, void 0, function* () {
+        const { reason, id_post, id_user } = body;
+        let sql = `insert into report (id_post, id_user, reason) values ('${id_post}','${id_user}','${reason}' )`;
+        const row = yield (0, connectDB_1.default)(sql);
+        if (row.insertId >= 0) {
+            console.log(row);
+            return {
+                id_post: id_post,
+                message: 'report success !'
+            };
+        }
+        else {
+            throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'report failed, please try again later!');
+        }
+    }),
 };
 exports.default = userService;

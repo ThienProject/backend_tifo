@@ -5,6 +5,7 @@ import httpStatus from 'http-status';
 import { IGetPostByID, IGetPosts } from '../types/post';
 import ApiError from '../utils/ApiError';
 import { send } from 'process';
+import { sendMessage } from '../configs/chatGPT_api';
 const fs = require('fs');
 
 const postController = {
@@ -218,6 +219,19 @@ const postController = {
     } catch (error) {
       next(error);
     }
-  }
+  },
+  getDescriptionAuto: async (req: Request, res: Response, next: NextFunction) => {
+    const {
+      prompt
+    } = req.body;
+    try {
+      const description = await sendMessage(prompt);
+      return res.status(httpStatus.CREATED).send({
+        description
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
 }
 export default postController;

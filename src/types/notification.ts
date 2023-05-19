@@ -6,7 +6,7 @@ export interface INotification {
   id_post?: string,
   id_follow?: string,
   content?: string,
-  type?: 'post_love' | 'follow' | 'accept_follow' | 'post_comment' | 'reply'
+  type?: 'post_love' | 'follow' | 'accept_follow' | 'post_comment' | 'reply' | 'banned_post'
 }
 export interface IPayloadNoti {
   id_user: string, limit: number, offset: number, time: string, category: string, sort: string,

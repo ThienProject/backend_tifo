@@ -58,4 +58,9 @@ router.get(
   '/get/followers',
   userController.getFollowers
 );
+router.post(
+  '/post/report',
+  isAuth,
+  userController.reportPost
+);
 export default router;

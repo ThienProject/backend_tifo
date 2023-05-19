@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const admin_services_1 = __importDefault(require("../services/admin.services"));
 const http_status_1 = __importDefault(require("http-status"));
+const auth_services_1 = __importDefault(require("../services/auth.services"));
 const authController = {
     getUsers: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         const { offset, limit, id_role, filters } = req.body;
@@ -74,5 +75,55 @@ const authController = {
             }
         });
     },
+    lockUser: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const { id_user, reason, } = req.body;
+        try {
+            const { message } = yield admin_services_1.default.lockUser({
+                id_user,
+                reason
+            });
+            return res.status(http_status_1.default.CREATED).send({
+                message,
+            });
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
+    lockPost: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const { id_post, id_user, reason, } = req.body;
+        try {
+            const { message } = yield admin_services_1.default.lockPost({
+                id_post,
+                reason
+            });
+            if (message) {
+                yield auth_services_1.default.sendNotification({ id_post, id_user, type: 'banned_post' });
+                res.send({
+                    message,
+                });
+            }
+            return res.status(http_status_1.default.CREATED).send({
+                message,
+            });
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
+    userStatistics: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const { total, increaseMonth } = yield admin_services_1.default.userStatistics();
+            if (total) {
+                res.send({
+                    total,
+                    increaseMonth
+                });
+            }
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
 };
 exports.default = authController;

@@ -46,6 +46,11 @@ router.post(
   postController.updateLove
 );
 router.post(
+  '/getDescriptionAuto',
+  isAuth,
+  postController.getDescriptionAuto
+);
+router.post(
   '/updateSave',
   isAuth,
   validate(postValidation.updateSave),

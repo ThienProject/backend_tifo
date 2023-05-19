@@ -111,7 +111,7 @@ const messageService = {
     sqlUserRoom = sqlUserRoom.substring(0, sqlUserRoom.length - 1);
     sqlActions = sqlActions.substring(0, sqlActions.length - 1);
     sqlGetUserNew = sqlGetUserNew.substring(0, sqlGetUserNew.length - 3);
-    console.log(sqlActions);
+
     const userRoom: any = await queryDb(sqlUserRoom);
     if (userRoom.insertId >= 0) {
       await queryDb(sqlActions);
@@ -189,7 +189,7 @@ const messageService = {
     from room 
     join user_room ON room.id_room = user_room.id_room
     JOIN (SELECT user_room.id_room from user_room WHERE user_room.id_user ="${id_me}" 	limit ${limit} OFFSET ${offset}) as roomFilter on roomFilter.id_room = user_room.id_room
-    JOIN user on user.id_user = user_room.id_user and user.status <> "banned"
+    JOIN user on user.id_user = user_room.id_user  and user.id_user not in (select banned.id_user from banned)
     left JOIN ( 
             SELECT chat.* , user.username as affected_username
       		from user_room 
@@ -213,6 +213,7 @@ const messageService = {
             ORDER by chat.datetime DESC) as chatlimit on
              								 user_room.id_user_room = chatlimit.id_user_room
      ORDER by chatlimit.datetime  DESC`;
+
     const rows: any = await queryDb(sql);
     const rooms: any[] = rows;
     if (rooms && rooms.length > 0) {
@@ -270,7 +271,6 @@ const messageService = {
       throw new ApiError(httpStatus.BAD_REQUEST, 'Delete room failed, please try again later!');
     }
   },
-
   deleteUser: async (body: { id_room: string, id_user: string, id_owner: string }) => {
     const {
       id_room, id_user, id_owner
@@ -279,7 +279,7 @@ const messageService = {
     if (clearChats.insertId >= 0) {
       if (id_owner) {
         const sqlChat = `insert into chat (id_user_room, type, id_affected) values ((select user_room.id_user_room from user_room where id_room = '${id_room}' and id_user = "${id_owner}"), "remove", "${id_user}" );`;
-        console.log(sqlChat);
+
         const roomChat: any = await queryDb(sqlChat);
         if ((roomChat.insertId >= 0)) {
           const { date, avatar, newChat } = await getChatRecent();
@@ -298,45 +298,72 @@ const messageService = {
   },
   getChatsByIDRoom: async (query: IGetChatsByIDRoom) => {
     const { id_user, id_room, limit, offset } = query;
-    const sql = `select chat.*, room.type as room_type, room.id_room, room.name, room.avatar as room_avatar,
-                  chat_affected.username as affected_username, user.id_user, user.fullname, user.username, user.avatar from 
-              chat 
-              LEFT JOIN user_room ON chat.id_user_room = user_room.id_user_room
-              Left Join user on user_room.id_user = user.id_user
-              right join chat_copy on chat_copy.id_chat = chat.id_chat and chat_copy.id_user = '${id_user}'
-              left join (select chat.id_chat, user.* from user, chat WHERE chat.id_affected = user.id_user ) as chat_affected on chat_affected.id_chat = chat.id_chat
-              left join room on room.id_room = user_room.id_room
-              where user_room.id_room = "${id_room}"
-              ORDER by chat.datetime DESC
-              limit ${limit} OFFSET ${offset || 0} 
-              `;
+    const sql = `select * from
+                (select chat.*, user.id_user,
+                  chat_affected.username as affected_username   
+                  from
+                  chat
+                  LEFT JOIN user_room ON chat.id_user_room = user_room.id_user_room
+                  Left Join user on user_room.id_user = user.id_user  
+
+                  right join chat_copy on chat_copy.id_chat = chat.id_chat and chat_copy.id_user = '${id_user}'
+                  left join (select chat.id_chat, user.* from user, chat WHERE chat.id_affected = user.id_user ) as chat_affected on chat_affected.id_chat = chat.id_chat
+                  left join room on room.id_room = user_room.id_room  
+
+                  where user_room.id_room =  "${id_room}"  
+
+                  ORDER by chat.datetime DESC
+                  limit ${limit} OFFSET ${offset || 0}   ) as chatFilter right JOIN  (select  user.id_user,
+                  user.fullname,
+                  user.username,
+                  user.avatar  ,
+                    room.id_room,
+                    room.type as room_type,
+                    room.avatar as room_avatar,
+                    room.name
+                   from user,  user_room , room
+                   WHERE user_room.id_room =  "${id_room}" 
+
+                   and room.id_room = user_room.id_room
+                   and user_room.id_user = user.id_user   )
+                   as userInRom on userInRom.id_user = chatFilter.id_user 
+                   ORDER by chatFilter.datetime DESC
+                   `;
+
     const rows: any = await queryDb(sql);
     const chats: any[] = rows.reverse();
     if (chats.length > 0) {
-      const { room_type: type, id_room, name, avatar, room_avatar } = chats[0];
+      console.log(chats[0])
+      const { room_type: type, id_room, name, room_avatar } = chats[0];
       const newChats = chats.reduce((previousValue, currentValue) => {
-
-        const currentDate = currentValue.datetime;
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth() + 1;
-        const day = currentDate.getDate();
-        const date = `${year}-${month.toString().padStart(2, '0')}-${day}`;
-        const index = previousValue.findIndex((item: any) => Object.keys(item)[0] === date);
-        if (index === -1) {
-          previousValue.push({
-            [date]: [currentValue]
-          })
-          return previousValue;
-        } else {
-          previousValue[index][date].push(
-            currentValue
-          )
-          return previousValue;
+        const { avatar, username, fullname, id_user } = currentValue;
+        const indexUser = previousValue.users.findIndex((item: any) => item.id_user === id_user);
+        if (indexUser == -1) {
+          previousValue.users.push({ avatar, username, fullname, id_user });
         }
-      }, [])
+        if (currentValue.id_chat) {
+          const currentDate = currentValue.datetime;
+          const year = currentDate.getFullYear();
+          const month = currentDate.getMonth() + 1;
+          const day = currentDate.getDate();
+          const date = `${year}-${month.toString().padStart(2, '0')}-${day}`;
+          const index = previousValue.chats?.findIndex((item: any) => Object.keys(item)[0] === date);
+          if (index === -1) {
+            previousValue.chats.push({
+              [date]: [currentValue]
+            })
+          } else {
+            previousValue.chats[index][date].push(
+              currentValue
+            )
+          }
+        }
+
+        return previousValue;
+      }, { chats: [], users: [] })
       return {
-        chats: newChats,
-        room: { type, id_room, name, avatar: room_avatar },
+        chats: newChats.chats,
+        room: { type, id_room, name, avatar: room_avatar, users: newChats.users },
         message: "Get chats success!"
       }
     }
@@ -507,7 +534,6 @@ const messageService = {
                   ((SELECT id_user_room FROM user_room
                   WHERE id_room = "${id_room}" AND id_user = "${id_me}"), "${message}", (NOW()));
                   `;
-      console.log(sql)
       chat = await queryDb(sql);
     }
     if (chat && chat.insertId >= 0) {

@@ -12,6 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const http_status_1 = __importDefault(require("http-status"));
 const user_services_1 = __importDefault(require("../services/user.services"));
 const __1 = require("..");
 const auth_services_1 = __importDefault(require("../services/auth.services"));
@@ -177,6 +178,22 @@ const userController = {
                     users, messages
                 });
             }
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
+    reportPost: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const { id_post, id_user, reason, } = req.body;
+        try {
+            const { message } = yield user_services_1.default.reportPost({
+                id_post,
+                id_user,
+                reason
+            });
+            return res.status(http_status_1.default.CREATED).send({
+                message,
+            });
         }
         catch (error) {
             next(error);

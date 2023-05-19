@@ -15,4 +15,7 @@ router.post('/user/gets', admin_controller_1.default.getUsers);
 router.post('/user/get', admin_controller_1.default.getUserByID);
 router.post('/post/gets', admin_controller_1.default.getPosts);
 router.post('/post/get', admin_controller_1.default.getPost);
+router.post('/post/lock', admin_controller_1.default.lockPost);
+router.post('/user/lock', admin_controller_1.default.lockUser);
+router.post('/user/statistics', admin_controller_1.default.userStatistics);
 exports.default = router;

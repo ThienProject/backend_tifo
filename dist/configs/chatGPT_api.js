@@ -16,18 +16,14 @@ exports.sendMessage = void 0;
 const axios_1 = __importDefault(require("axios"));
 const model = 'text-davinci-003';
 const apiKey = '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';
-const sendMessage = (context) => __awaiter(void 0, void 0, void 0, function* () {
-    const promptHis = context.reduce((acc, obj) => {
-        return `${acc}${obj.content}\n`;
-    }, `Bạn là một chatbot trong mạng xã hội với username là 'tifo-chatbot'. Bạn có nhiệm vụ trò chuyện với mọi người dùng. Dưới đây là đoạn hội thoại của chúng ta. hãy tiếp tục cuộc hội thoại này!.\n
-`);
+const sendMessage = (prompt) => __awaiter(void 0, void 0, void 0, function* () {
     return yield axios_1.default
         .post('https://api.openai.com/v1/engines/' + model + '/completions', {
-        prompt: promptHis,
+        prompt: prompt,
         max_tokens: 500,
         n: 1,
         stop: null,
-        temperature: 0.4
+        temperature: 0.5
     }, {
         headers: {
             'Content-Type': 'application/json',
@@ -35,13 +31,11 @@ const sendMessage = (context) => __awaiter(void 0, void 0, void 0, function* () 
         }
     })
         .then((response) => {
-        // console.log("có kết quả : ", response.data.choices)
-        // console.log(response.data.choices[0].text);
+        console.log(response.data.choices[0].text);
         return response.data.choices[0].text;
     })
         .catch((error) => {
-        console.log("có lỗi api gpt");
-        throw error;
+        console.error(error);
     });
 });
 exports.sendMessage = sendMessage;

@@ -3,6 +3,7 @@ import adminService from '../services/admin.services';
 import { generateToken } from '../middleware/auth/JWT'
 import httpStatus from 'http-status';
 import { IGetPostByID } from '../types/post';
+import authService from '../services/auth.services';
 const authController = {
   getUsers: async (req: Request, res: Response, next: NextFunction) => {
     const { offset, limit, id_role, filters } = req.body;
@@ -51,6 +52,62 @@ const authController = {
       if (user) {
         res.send({
           user
+        });
+      }
+    } catch (error) {
+      next(error);
+    }
+  },
+  lockUser: async (req: Request, res: Response, next: NextFunction) => {
+    const {
+      id_user,
+      reason,
+    } = req.body;
+
+    try {
+      const { message } = await adminService.lockUser({
+        id_user,
+        reason
+      })
+      return res.status(httpStatus.CREATED).send({
+        message,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+  lockPost: async (req: Request, res: Response, next: NextFunction) => {
+    const {
+      id_post,
+      id_user,
+      reason,
+    } = req.body;
+
+    try {
+      const { message } = await adminService.lockPost({
+        id_post,
+        reason
+      })
+      if (message) {
+        await authService.sendNotification({ id_post, id_user, type: 'banned_post' })
+        res.send({
+          message,
+        });
+      }
+      return res.status(httpStatus.CREATED).send({
+        message,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+  userStatistics: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { total, increaseMonth } = await adminService.userStatistics();
+      if (total) {
+        res.send({
+          total,
+          increaseMonth
         });
       }
     } catch (error) {

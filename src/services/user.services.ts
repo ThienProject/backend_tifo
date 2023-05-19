@@ -256,5 +256,20 @@ const userService = {
       }
     }
   },
+  reportPost: async (body: any) => {
+    const { reason, id_post, id_user } = body;
+    let sql = `insert into report (id_post, id_user, reason) values ('${id_post}','${id_user}','${reason}' )`;
+    const row: any = await queryDb(sql);
+
+    if (row.insertId >= 0) {
+      console.log(row);
+      return {
+        id_post: id_post,
+        message: 'report success !'
+      }
+    } else {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'report failed, please try again later!');
+    }
+  },
 }
 export default userService;

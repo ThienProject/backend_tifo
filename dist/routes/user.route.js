@@ -19,4 +19,5 @@ router.post('/unfollow', auth_middleware_1.isAuth, (0, validate_1.default)(user_
 router.get('/getUsersNotInRoom', auth_middleware_1.isAuth, user_controller_1.default.getUsersNotInRoom);
 router.get('/get/followings', user_controller_1.default.getFollowings);
 router.get('/get/followers', user_controller_1.default.getFollowers);
+router.post('/post/report', auth_middleware_1.isAuth, user_controller_1.default.reportPost);
 exports.default = router;

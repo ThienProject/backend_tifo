@@ -27,5 +27,17 @@ router.post(
   '/post/get',
   adminController.getPost
 );
+router.post(
+  '/post/lock',
+  adminController.lockPost
+);
+router.post(
+  '/user/lock',
+  adminController.lockUser
+);
+router.post(
+  '/user/statistics',
+  adminController.userStatistics
+)
 
 export default router;

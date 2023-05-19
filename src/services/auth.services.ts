@@ -202,17 +202,23 @@ const authService = {
   getNotifications: async ({ id_user, limit, offset, time, category, sort }: IPayloadNoti) => {
     let newTime = '';
     switch (time) {
-      case 'today': newTime += ' and DATE(notificaion.datetime) = CURDATE()'; break;
-      case 'year': newTime = ' and YEAR(notificaion.datetime) = YEAR(CURDATE())'; break;
-      case 'week': newTime = ' and YEAR(notificaion.datetime) = YEAR(CURDATE()) and WEEK(notificaion.datetime) = WEEK(CURDATE())'; break
-      case 'month': newTime = ' and YEAR(notificaion.datetime) = YEAR(CURDATE()) and MONTH(notificaion.datetime) = MONTH(CURDATE())'; break
+      case 'today': newTime += ' and DATE(notification.datetime) = CURDATE()'; break;
+      case 'year': newTime = ' and YEAR(notification.datetime) = YEAR(CURDATE())'; break;
+      case 'week': newTime = ' and YEAR(notification.datetime) = YEAR(CURDATE()) and WEEK(notification.datetime) = WEEK(CURDATE())'; break
+      case 'month': newTime = ' and YEAR(notification.datetime) = YEAR(CURDATE()) and MONTH(notification.datetime) = MONTH(CURDATE())'; break
       default: newTime = ''
         break;
+    }
+    let type = '';
+    if (category === 'follow') {
+      type = ` and notification.type in ("follow"  , "accept_follow", "request_follow")`;
+    } else {
+      type = ` and notification.type = "${category}"`
     }
     const sql = `select notification.*, notification.id_follow,  user.fullname, user.avatar , user.username from notification
     LEFT JOIN user ON notification.id_actor = user.id_user
     where notification.id_user="${id_user}"
-    ${category === 'all' ? '' : `and notification.type = "${category}"`}
+    ${category === 'all' ? '' : type}
      ${newTime}
     order by  notification.datetime ${sort}
     limit ${limit} offset ${offset} `
@@ -231,7 +237,8 @@ const authService = {
   },
   sendNotification: async (body: INotification) => {
     const { id_user, id_actor, type, id_comment, id_post, id_follow } = body;
-    const sql = `INSERT INTO notification (id_user, id_actor, type, id_comment, id_post, id_follow) VALUES ('${id_user}', '${id_actor}', '${type}', ${id_comment ? `'${id_comment}'` : "NULL"}, ${id_post || "NULL"},  ${id_follow || "NULL"})`;
+    const sql = `INSERT INTO notification (id_user, id_actor, type, id_comment, id_post, id_follow) VALUES ('${id_user}', '${id_actor}', '${type}', ${id_comment ? `'${id_comment}'` : "NULL"}, ${id_post ? `'${id_post}'` : 'NULL'},  ${id_follow || "NULL"})`;
+    console.log(sql)
     const notifications: any = await queryDb(sql);
     if (_.isEmpty(notifications))
       throw new ApiError(

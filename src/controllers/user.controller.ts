@@ -153,6 +153,25 @@ const userController = {
       next(error);
     }
   },
+  reportPost: async (req: Request, res: Response, next: NextFunction) => {
+    const {
+      id_post,
+      id_user,
+      reason,
+    } = req.body;
 
+    try {
+      const { message } = await userService.reportPost({
+        id_post,
+        id_user,
+        reason
+      })
+      return res.status(httpStatus.CREATED).send({
+        message,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
 }
 export default userController;

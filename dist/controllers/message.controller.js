@@ -20,11 +20,13 @@ const messageController = {
         const query = req.query;
         const id_room = query.id_room;
         try {
-            const { chats, message } = yield message_services_1.default.getChatsByIDRoom(query);
+            const { chats, message, room } = yield message_services_1.default.getChatsByIDRoom(query);
+            // console.log(room)
             if (chats) {
                 return res.status(http_status_1.default.OK).send({
                     chats: chats,
                     id_room,
+                    room,
                     message: message
                 });
             }

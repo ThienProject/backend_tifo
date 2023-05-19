@@ -45,7 +45,7 @@ const authService = {
         left JOIN role ON role.id_role = user.id_role 
         LEFT JOIN post ON post.id_user = user.id_user
         LEFT JOIN banned ON banned.id_user = user.id_user
-        left JOIN (select post.id_user,COALESCE(count(DISTINCT post.id_post),0) as count from report, post WHERE post.id_post = report.id_post ) as post_reports on post_reports.id_user = user.id_user
+        left JOIN (select post.id_user,COALESCE(count(DISTINCT post.id_post),0) as count from report, post WHERE post.id_post = report.id_post group by post.id_post) as post_reports on post_reports.id_user = user.id_user
         where role.id_role <> 3
         ${filterSql} 
         GROUP BY user.id_user
@@ -103,6 +103,36 @@ const authService = {
         user: userRest,
         message: "Get user success!"
       }
+    }
+  },
+  lockUser: async (body: any) => {
+    const { reason, id_user } = body;
+    let sql = `insert into banned (id_user, reason) values ('${id_user}', '${reason}')`;
+    const row: any = await queryDb(sql);
+
+    if (row.insertId >= 0) {
+      console.log(row);
+      return {
+        id_user: id_user,
+        message: 'banned success !'
+      }
+    } else {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'banned failed, please try again later!');
+    }
+  },
+  lockPost: async (body: any) => {
+    const { reason, id_post } = body;
+    let sql = `update post set is_banned = true , banned_reason = '${reason}'  where id_post  = '${id_post}'`;
+    const row: any = await queryDb(sql);
+
+    if (row.insertId >= 0) {
+      console.log(row);
+      return {
+        id_post: id_post,
+        message: 'banned success !'
+      }
+    } else {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'banned failed, please try again later!');
     }
   },
   getPosts: async (payload: any) => {
@@ -194,6 +224,22 @@ const authService = {
       throw new ApiError(httpStatus.BAD_REQUEST, "This post does not exist !");
     }
   },
+  userStatistics: async () => {
+    const sql = `select count(user.id_user) as total 
+          ,(select count(user.id_user)  
+          from user 
+          where MONTH(user.datetime) = MONTH(CURDATE()) ) as increaseMonth 
+          from user `;
+    const row: any = await queryDb(sql);
+    if (row) {
+      return {
+        total: row[0].total,
+        increaseMonth: row[0].increaseMonth
+      }
+    } else {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Statistics failed, please try again later!');
+    }
 
+  }
 }
 export default authService;
