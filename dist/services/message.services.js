@@ -471,17 +471,19 @@ const messageService = {
             (SELECT user.id_user, user.fullname, user.username, user.avatar, room.id_room,room.name,  room.avatar as room_avatar, room.type
             FROM user
             LEFT JOIN user_room ON user.id_user = user_room.id_user
-            left JOIN (SELECT  room.* from user_room, room  WHERE room.id_room = user_room.id_room and (room.type = 'friend' or room.type = 'chatbot') and user_room.id_user ="${id_user}") as Meroom on Meroom.id_room = user_room.id_room
+            left JOIN (SELECT  room.* from user_room, room  WHERE room.id_room = user_room.id_room and (room.type = 'friend' or room.type = 'chatbot') and user_room.id_user ="${id_user}") 
+              as Meroom on Meroom.id_room = user_room.id_room  
             left JOIN room on room.id_room = Meroom.id_room
-            WHERE user.id_user <> "${id_user}" and (user.id_user = "${id_user}" or fullname like "%${q}%" or username like "%${q}%")
+            WHERE user.id_user not in (select banned.id_user from banned) and user.id_user <> "${id_user}" and (user.id_user = "${id_user}" or fullname like "%${q}%" or username like "%${q}%")
             GROUP by user.id_user, room.id_room
             ORDER BY user.fullname , room.id_room DESC) 
             UNION (select  '', '','','' , room.id_room, room.name,  room.avatar, room.type
                                  from room
                                  LEFT JOIN user_room ON room.id_room = user_room.id_room
-                                 LEFT JOIN user ON user_room.id_user = user.id_user
+                                 LEFT JOIN user ON user_room.id_user = user.id_user 
                                  and user_room.id_room in (SELECT user_room.id_room from user_room  WHERE user_room.id_user ="${id_user}")
-                                  WHERE room.type ='group' and (room.name like "%${q}%")
+                                  
+                                  WHERE room.type ='group' and (room.name like "%${q}%") and user.id_user  not in (select banned.id_user from banned)
                                 )  
             LIMIT ${limit} OFFSET ${offset} `;
             const users = yield (0, connectDB_1.default)(sql);

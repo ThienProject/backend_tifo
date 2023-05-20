@@ -254,6 +254,82 @@ const authService = {
         else {
             throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'Statistics failed, please try again later!');
         }
+    }),
+    userStatisticsAge: () => __awaiter(void 0, void 0, void 0, function* () {
+        const sql = `SELECT
+    (SELECT COUNT(*) FROM user WHERE TIMESTAMPDIFF(YEAR, birthday, CURDATE()) BETWEEN 13 AND 17) * 100.0 / (SELECT COUNT(*) FROM user) AS percentage_13_17,
+    (SELECT COUNT(*) FROM user WHERE TIMESTAMPDIFF(YEAR, birthday, CURDATE()) BETWEEN 18 AND 24) * 100.0 / (SELECT COUNT(*) FROM user) AS percentage_18_24,
+    (SELECT COUNT(*) FROM user WHERE TIMESTAMPDIFF(YEAR, birthday, CURDATE()) BETWEEN 25 AND 44) * 100.0 / (SELECT COUNT(*) FROM user) AS percentage_25_44,
+    (SELECT COUNT(*) FROM user WHERE TIMESTAMPDIFF(YEAR, birthday, CURDATE()) >= 45) * 100.0 / (SELECT COUNT(*) FROM user) AS percentage_45_above;`;
+        const row = yield (0, connectDB_1.default)(sql);
+        if (row) {
+            return {
+                statistics: row[0]
+            };
+        }
+        else {
+            throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'Statistics failed, please try again later!');
+        }
+    }),
+    followStatistics: () => __awaiter(void 0, void 0, void 0, function* () {
+        const sql = `select user.id_user, user.username, user.fullname, user.avatar, user.cover , count(follow.id_follower) as followers
+              FROM user , follow
+              WHERE user.id_user = follow.id_user and follow.status = 'accept' and user.id_user not in (select banned.id_user from banned)
+              GROUP by user.id_user
+              ORDER by followers desc
+              LIMIT 4`;
+        const users = yield (0, connectDB_1.default)(sql);
+        if (users) {
+            return {
+                users
+            };
+        }
+        else {
+            throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'Statistics failed, please try again later!');
+        }
+    }),
+    postStatistics: () => __awaiter(void 0, void 0, void 0, function* () {
+        const sql = `SELECT dates.post_date, COALESCE(post_counts.total_posts, 0) AS posts_7, COALESCE(post_counts.total_reels, 0) AS reels_7, 
+(select count(id_post) from post) as totals, (select count(id_post) from post WHERE post.type ="reel") as total_reels,
+ (select count(id_post) from post WHERE post.type ="post") as total_posts
+FROM (
+  SELECT DATE(DATE_SUB(NOW(), INTERVAL n.num DAY)) AS post_date
+  FROM (
+    SELECT 0 AS num UNION ALL
+    SELECT 1 UNION ALL
+    SELECT 2 UNION ALL
+    SELECT 3 UNION ALL
+    SELECT 4 UNION ALL
+    SELECT 5 UNION ALL
+    SELECT 6
+  ) n
+) dates
+LEFT JOIN (
+  SELECT DATE(post.date_time) AS post_date,
+         SUM(CASE WHEN post.type = 'post' THEN 1 ELSE 0 END) AS total_posts,
+         SUM(CASE WHEN post.type = 'reel' THEN 1 ELSE 0 END) AS total_reels
+  FROM post
+  WHERE post.type IN ('post', 'reel')
+        AND post.date_time >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+  GROUP BY post_date
+) post_counts ON dates.post_date = post_counts.post_date
+ORDER BY dates.post_date ASC;
+`;
+        const results = yield (0, connectDB_1.default)(sql);
+        if (results) {
+            const { totals, total_posts, total_reels } = results[0];
+            const statistics = { totals, total_posts, total_reels, reels: [], posts: [] };
+            results.forEach((item) => {
+                statistics.reels.push(Number(item.reels_7));
+                statistics.posts.push(Number(item.posts_7));
+            });
+            return {
+                statistics
+            };
+        }
+        else {
+            throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'Statistics failed, please try again later!');
+        }
     })
 };
 exports.default = authService;

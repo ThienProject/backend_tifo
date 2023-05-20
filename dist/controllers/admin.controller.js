@@ -125,5 +125,44 @@ const authController = {
             next(error);
         }
     }),
+    userStatisticsAge: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const { statistics } = yield admin_services_1.default.userStatisticsAge();
+            if (statistics) {
+                res.send({
+                    statistics
+                });
+            }
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
+    followStatistics: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const { users } = yield admin_services_1.default.followStatistics();
+            if (users) {
+                res.send({
+                    users
+                });
+            }
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
+    postStatistics: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const { statistics } = yield admin_services_1.default.postStatistics();
+            if (statistics) {
+                res.send({
+                    statistics
+                });
+            }
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
 };
 exports.default = authController;

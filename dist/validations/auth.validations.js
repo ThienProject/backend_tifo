@@ -22,6 +22,7 @@ const authValidation = {
             email: joi_1.default.string().required().email(),
             password: joi_1.default.string().required(),
             username: joi_1.default.string().required(),
+            birthday: joi_1.default.string().required(),
         }),
     },
     updateProfile: {

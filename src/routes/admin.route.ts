@@ -39,5 +39,17 @@ router.post(
   '/user/statistics',
   adminController.userStatistics
 )
+router.post(
+  '/user/statistics/age',
+  adminController.userStatisticsAge
+),
+  router.post(
+    '/follow/statistics',
+    adminController.followStatistics
+  ),
+  router.post(
+    '/post/statistics',
+    adminController.postStatistics
+  )
 
 export default router;

@@ -61,9 +61,9 @@ const authController = {
         }
     }),
     register: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-        const { email, password, fullname, username } = req.body;
+        const { email, password, fullname, username, birthday } = req.body;
         try {
-            const { user, message } = yield auth_services_1.default.register({ email, password, fullname, username });
+            const { user, message } = yield auth_services_1.default.register({ email, password, fullname, username, birthday });
             if (user) {
                 res.status(http_status_1.default.CREATED).send({
                     user, message

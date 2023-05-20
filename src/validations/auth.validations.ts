@@ -19,6 +19,8 @@ const authValidation = {
       email: Joi.string().required().email(),
       password: Joi.string().required(),
       username: Joi.string().required(),
+      birthday: Joi.string().required(),
+
     }),
   },
 

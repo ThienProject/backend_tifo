@@ -44,9 +44,9 @@ const authController = {
   }
   ,
   register: async (req: Request, res: Response, next: NextFunction) => {
-    const { email, password, fullname, username } = req.body;
+    const { email, password, fullname, username, birthday } = req.body;
     try {
-      const { user, message } = await authService.register({ email, password, fullname, username });
+      const { user, message } = await authService.register({ email, password, fullname, username, birthday });
       if (user) {
         res.status(httpStatus.CREATED).send({
           user, message

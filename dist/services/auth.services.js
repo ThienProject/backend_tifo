@@ -35,7 +35,7 @@ const path = require('path');
 const saltRounds = 10;
 const authService = {
     register: (body) => __awaiter(void 0, void 0, void 0, function* () {
-        const { email, fullname, username, password } = body;
+        const { email, fullname, username, password, birthday } = body;
         const id_user = (0, uniqid_1.default)('USER_').toUpperCase();
         const id_role = 2;
         let user = yield (0, connectDB_1.default)(`select * from 
@@ -48,7 +48,7 @@ const authService = {
             throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "This username already exists !");
         }
         const hashPassword = yield bcrypt.hash(password, saltRounds);
-        const rows = yield (0, connectDB_1.default)(`insert into user(email, fullname,username, password, id_role, id_user, avatar) values('${email}','${fullname}','${username}','${hashPassword}','${id_role}','${id_user}', 'account.jpg')`);
+        const rows = yield (0, connectDB_1.default)(`insert into user(email, fullname,username, password, id_role, id_user, avatar, birthday) values('${email}','${fullname}','${username}','${hashPassword}','${id_role}','${id_user}', 'account.jpg', '${birthday}')`);
         if (rows.insertId >= 0) {
             const users = yield (0, connectDB_1.default)(`select * from user where email='${email}'`);
             const _a = users[0], { password } = _a, other = __rest(_a, ["password"]);
@@ -86,7 +86,7 @@ const authService = {
       UNION (select username, '', '' from user where (username = '${username}') and id_user <>'${id_user}') 
       UNION (select '', email,'' from user where ( email =  '${email}') and id_user <> '${id_user}')
       UNION (select '','',phone from user where (phone ='') and id_user <> '${id_user}')`);
-        if (!_.isEmpty(check)) {
+        if (check[0] || !_.isEmpty(check)) {
             const rules = [];
             check.forEach((error) => {
                 if (error.email) {

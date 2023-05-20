@@ -14,7 +14,7 @@ const saltRounds = 10;
 
 const authService = {
   register: async (body: IUser) => {
-    const { email, fullname, username, password } = body;
+    const { email, fullname, username, password, birthday } = body;
     const id_user = uniqid('USER_').toUpperCase();
     const id_role = 2;
     let user = await queryDb(`select * from 
@@ -34,7 +34,7 @@ const authService = {
     }
     const hashPassword = await bcrypt.hash(password, saltRounds);
     const rows: any = await queryDb(
-      `insert into user(email, fullname,username, password, id_role, id_user, avatar) values('${email}','${fullname}','${username}','${hashPassword}','${id_role}','${id_user}', 'account.jpg')`
+      `insert into user(email, fullname,username, password, id_role, id_user, avatar, birthday) values('${email}','${fullname}','${username}','${hashPassword}','${id_role}','${id_user}', 'account.jpg', '${birthday}')`
     );
     if (rows.insertId >= 0) {
       const users: any = await queryDb(`select * from user where email='${email}'`)
@@ -78,7 +78,7 @@ const authService = {
       UNION (select username, '', '' from user where (username = '${username}') and id_user <>'${id_user}') 
       UNION (select '', email,'' from user where ( email =  '${email}') and id_user <> '${id_user}')
       UNION (select '','',phone from user where (phone ='') and id_user <> '${id_user}')`);
-    if (!_.isEmpty(check)) {
+    if (check[0] || !_.isEmpty(check)) {
       const rules: any[] = [];
       check.forEach((error: any) => {
         if (error.email) {

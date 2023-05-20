@@ -114,5 +114,41 @@ const authController = {
       next(error);
     }
   },
+  userStatisticsAge: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { statistics } = await adminService.userStatisticsAge();
+      if (statistics) {
+        res.send({
+          statistics
+        });
+      }
+    } catch (error) {
+      next(error);
+    }
+  },
+  followStatistics: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { users } = await adminService.followStatistics();
+      if (users) {
+        res.send({
+          users
+        });
+      }
+    } catch (error) {
+      next(error);
+    }
+  },
+  postStatistics: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { statistics } = await adminService.postStatistics();
+      if (statistics) {
+        res.send({
+          statistics
+        });
+      }
+    } catch (error) {
+      next(error);
+    }
+  },
 };
 export default authController;
