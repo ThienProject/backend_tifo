@@ -62,7 +62,7 @@ const checkRoomID = (id_user, id_friend) => __awaiter(void 0, void 0, void 0, fu
 const getChatRecent = () => __awaiter(void 0, void 0, void 0, function* () {
     const chat = yield (0, connectDB_1.default)(`
                   SELECT 
-                  chat.id_chat, chat.datetime, chat.message, chat.type as chat_type, chat.id_affected,
+                  chat.id_chat, chat.datetime, chat.message, chat.type as chat_type, chat.id_affected, chat.image,
                   chat_affected.username as affected_username,
                   user_room.id_room, room.avatar as avatar_room, room.type, room.name,
                   user.id_user, user.fullname, user.username, user.avatar 
@@ -406,16 +406,16 @@ const messageService = {
         }
     }),
     createChat: (body) => __awaiter(void 0, void 0, void 0, function* () {
-        const { id_user: id_me, id_room, message, } = body;
+        const { id_user: id_me, id_room, message, type, image } = body;
         let chat;
         if (id_room) {
-            const sql = `INSERT INTO chat (id_user_room, message)
+            const sql = `INSERT INTO chat (id_user_room, message, type, image)
                   VALUES ((SELECT id_user_room FROM user_room 
-                  WHERE id_room = "${id_room}" AND id_user = "${id_me}"), ?);
+                  WHERE id_room = "${id_room}" AND id_user = "${id_me}"), ?, ?, ?);
                   `;
-            chat = yield (0, connectDB_1.executeDb)(sql, [message]);
+            chat = yield (0, connectDB_1.executeDb)(sql, [message || null, type || null, image || null]);
         }
-        if (chat.insertId >= 0) {
+        if ((chat === null || chat === void 0 ? void 0 : chat.insertId) >= 0) {
             const { newChat, date, id_room } = yield getChatRecent();
             return {
                 chat: newChat,

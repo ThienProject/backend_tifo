@@ -142,15 +142,20 @@ const messageController = {
       id_room,
       id_friend,
       isChatbot,
+      type,
       message
     } = req.body;
+    const file = req.file;
+    console.log(file?.filename);
     try {
       if (!isChatbot) {
         const { chat, date } = await messageServices.createChat({
           id_user,
           id_room,
           message,
-          id_friend
+          id_friend,
+          type,
+          image: file?.filename,
         })
         const newChat = {
           chat,

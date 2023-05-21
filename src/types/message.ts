@@ -3,6 +3,8 @@ export interface IChat {
   id_room?: string;
   id_friend?: string;
   message?: string;
+  type?: string;
+  image?: string;
 }
 export interface IGetRooms {
   id_user?: string,
