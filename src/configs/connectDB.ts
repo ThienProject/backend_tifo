@@ -5,9 +5,9 @@ import { RowDataPacket } from 'mysql2';
 
 const config = {
   db: {
-    host: 'localhost',
-    user: 'root',
-    password: '',
+    host: 'mysql-127954-0.cloudclusters.net',
+    user: 'admin',
+    password: 'hxlsPdSL',
     database: 'tifo',
     connectionLimit: 10,
     waitForConnections: true

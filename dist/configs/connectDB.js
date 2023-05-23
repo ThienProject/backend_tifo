@@ -17,9 +17,9 @@ const promise_1 = __importDefault(require("mysql2/promise"));
 // // create the connection to database
 const config = {
     db: {
-        host: 'localhost',
-        user: 'root',
-        password: '',
+        host: 'mysql-127954-0.cloudclusters.net',
+        user: 'admin',
+        password: 'hxlsPdSL',
         database: 'tifo',
         connectionLimit: 10,
         waitForConnections: true
