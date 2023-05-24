@@ -18,6 +18,7 @@ const promise_1 = __importDefault(require("mysql2/promise"));
 const config = {
     db: {
         host: 'mysql-127954-0.cloudclusters.net',
+        port: 10164,
         user: 'admin',
         password: 'hxlsPdSL',
         database: 'tifo',
