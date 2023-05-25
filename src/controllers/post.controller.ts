@@ -23,6 +23,20 @@ const postController = {
       next(error);
     }
   },
+  getBannedByIDPostThunk: async (req: Request, res: Response, next: NextFunction) => {
+    const query: IGetPostByID = req.query;
+    try {
+      const { post, message } = await postService.getBannedByIDPostThunk(query);
+      if (post) {
+        return res.status(httpStatus.OK).send({
+          post: post,
+          message: message
+        })
+      }
+    } catch (error) {
+      next(error);
+    }
+  },
   getPosts: async (req: Request, res: Response, next: NextFunction) => {
     const query: IGetPosts = req.query;
     try {

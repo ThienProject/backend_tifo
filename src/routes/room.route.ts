@@ -44,5 +44,5 @@ router.get(
   '/getUsersByIDRoom',
   isAuth,
   messageController.getUsersByIDRoom
-)
+);
 export default router;

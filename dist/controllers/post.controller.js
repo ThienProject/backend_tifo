@@ -32,6 +32,21 @@ const postController = {
             next(error);
         }
     }),
+    getBannedByIDPostThunk: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const query = req.query;
+        try {
+            const { post, message } = yield post_services_1.default.getBannedByIDPostThunk(query);
+            if (post) {
+                return res.status(http_status_1.default.OK).send({
+                    post: post,
+                    message: message
+                });
+            }
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
     getPosts: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         const query = req.query;
         try {

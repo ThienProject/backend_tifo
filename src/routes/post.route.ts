@@ -39,6 +39,10 @@ router.get(
   validate(postValidation.getPostByID),
   postController.getPostByID
 );
+router.get(
+  '/getBannedByIDPostThunk',
+  postController.getBannedByIDPostThunk
+);
 router.post(
   '/updateLove',
   isAuth,

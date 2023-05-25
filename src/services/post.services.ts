@@ -49,7 +49,13 @@ const postService = {
   },
   getPostsByIDUser: async (query: any) => {
     const { id_user, offset, limit } = query;
-    const sql = `SELECT post.*, user.id_user, user.username, user.avatar, user.fullname from user, post where post.id_user = user.id_user and post.type ='post' and user.id_user = '${id_user}' limit ${limit} offset ${offset}`;
+    const sql = `SELECT post.*, 
+            user.id_user, user.username, user.avatar, user.fullname 
+            from user, post 
+            where post.id_user = user.id_user 
+            and post.type ='post' 
+            and post.is_banned = false
+            and user.id_user = '${id_user}' limit ${limit} offset ${offset}`;
     const rows: any = await queryDb(sql)
     const posts = rows;
     for (let i = 0; i <= posts.length - 1; i++) {
@@ -68,7 +74,10 @@ const postService = {
   },
   getReelsByIDUser: async (query: any) => {
     const { id_user, offset, limit } = query;
-    const sql = `SELECT post.*, user.id_user, user.username, user.avatar, user.fullname from user, post where post.id_user = user.id_user and post.type ='reel' and user.id_user = '${id_user}' limit ${limit} offset ${offset}`;
+    const sql = `SELECT post.*, user.id_user, user.username, user.avatar, user.fullname from user, post where post.id_user = user.id_user 
+    and post.type ='reel' 
+     and post.is_banned = false
+    and user.id_user = '${id_user}' limit ${limit} offset ${offset}`;
     const rows: any = await queryDb(sql)
     const posts = rows;
     for (let i = 0; i <= posts.length - 1; i++) {
@@ -87,7 +96,11 @@ const postService = {
   },
   getSavesByIDUser: async (query: any) => {
     const { id_user, offset, limit } = query;
-    const sql = `SELECT post.* ,user.id_user, user.username, user.avatar, user.fullname from user, save, post where user.id_user = '${id_user}' and post.id_post = save.id_post and save.id_user = user.id_user limit ${limit} offset ${offset}`;
+    const sql = `SELECT post.* ,user.id_user, user.username, user.avatar, user.fullname from user, save, post 
+    where user.id_user = '${id_user}' 
+    and post.id_post = save.id_post 
+      and post.is_banned = false
+    and save.id_user = user.id_user limit ${limit} offset ${offset}`;
     const rows: any = await queryDb(sql)
     const posts = rows;
     for (let i = 0; i <= posts.length - 1; i++) {
@@ -155,6 +168,39 @@ const postService = {
 
   },
   getPostByID: async (query: IGetPostByID) => {
+    const { id_post, id_user } = query;
+    const sql = `SELECT post.*,  
+              user.id_user,
+              user.username,
+              user.avatar,
+              user.fullname,
+              count(love.id_user) as loves
+              ${id_user ? `, CASE WHEN love.id_user = '${id_user}' THEN true ELSE false END AS isLove` : ' '} 
+              ${id_user ? `, CASE WHEN save.id_user = '${id_user}' THEN true ELSE false END AS isSave` : ' '} 
+
+              FROM post, user, love, save 
+              where 
+              post.id_user = user.id_user 
+              and post.id_post = '${id_post}' 
+              and love.id_post = post.id_post
+              and save.id_post = post.id_post`;
+    const rows: any = await queryDb(sql)
+    if (rows.length > 0) {
+      const post = rows[0];
+      const commentLength = await queryDb(`select count(comment.id_comment) as commentLength from comment where comment.id_post = '${id_post}' `)
+      // const comments = await queryDb(`select comment.*, user.id_user,user.avatar, user.fullname, user.username from comment, user where id_post = '${id_post}' and user.id_user = comment.id_user `);
+      post.commentLength = commentLength ? commentLength[0].commentLength : 0;
+      const medias = await queryDb(`select *from media where id_post = '${id_post}'`);
+      post.medias = medias;
+      return {
+        post,
+        message: "Get posts success!"
+      }
+    } else {
+      throw new ApiError(httpStatus.BAD_REQUEST, "This post does not exist !");
+    }
+  },
+  getBannedByIDPostThunk: async (query: IGetPostByID) => {
     const { id_post, id_user } = query;
     const sql = `SELECT post.*,  
               user.id_user,
