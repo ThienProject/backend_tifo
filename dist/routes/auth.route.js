@@ -18,4 +18,5 @@ router.put('/updatePassword', auth_middleware_1.isAuth, auth_controller_1.defaul
 router.post('/getNotifications', auth_controller_1.default.getNotifications);
 router.post('/updateInvisible', auth_middleware_1.isAuth, auth_controller_1.default.updateInvisible);
 router.post('/updateImage', auth_middleware_1.isAuth, (0, upload_1.default)("users").single('image_user'), auth_controller_1.default.updateImage);
+router.post('/loginGoogle', (0, validate_1.default)(auth_validations_1.default.loginGoogle), auth_controller_1.default.loginGoogle);
 exports.default = router;

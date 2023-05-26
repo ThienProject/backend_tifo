@@ -14,12 +14,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.userSockets = exports.io = void 0;
 const express_1 = __importDefault(require("express"));
+const fs = require('fs');
 const dotenv_1 = __importDefault(require("dotenv"));
 const routes_1 = __importDefault(require("./routes"));
 const cors_1 = __importDefault(require("cors"));
 const morgan_1 = __importDefault(require("morgan"));
 const error_1 = require("./middleware/error");
 const multer_1 = __importDefault(require("multer"));
+const https = require('https');
 const user_services_1 = __importDefault(require("./services/user.services"));
 dotenv_1.default.config();
 const port = process.env.PORT;
@@ -42,8 +44,14 @@ app.use((err, req, res, next) => {
     }
 });
 app.use((0, cors_1.default)({
-// origin: 'http://localhost:3000',
+    // origin: ['https://tifo-social-network.vercel.app', 'http://localhost:3000'], // Hoặc cấu hình nguồn gốc của bạn (ví dụ: 'http://localhost:3000')
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'RefreshToken', 'Referrer-Policy'], // Thêm 'Referrer-Policy' vào danh sách các tiêu đề cho phép
 }));
+app.use((req, res, next) => {
+    res.setHeader('Referrer-Policy', 'no-referrer'); // Hoặc giá trị chính sách Referrer Policy mong muốn
+    next();
+});
 // v1 api routes
 app.use('/api/v1', routes_1.default);
 app.get('/', (req, res) => {
@@ -54,8 +62,9 @@ app.use(error_1.errorHandler);
 const server = require('http').createServer(app);
 exports.io = require('socket.io')(server, {
     cors: {
-        // origin: 'http://localhost:3000',
-        methods: ["GET", "POST"]
+        origin: '*',
+        methods: ['GET', 'POST'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'RefreshToken', 'Referrer-Policy'], // Thêm 'Referrer-Policy' vào danh sách các tiêu đề cho phép
     }
 });
 exports.userSockets = {};

@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendMessage = void 0;
 const axios_1 = __importDefault(require("axios"));
 const model = 'text-davinci-003';
-const apiKey = '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';
+const apiKey = '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';
 const sendMessage = (context) => __awaiter(void 0, void 0, void 0, function* () {
     const promptHis = context.reduce((acc, obj) => {
         return `${acc}${obj.content}\n`;
@@ -35,7 +35,7 @@ const sendMessage = (context) => __awaiter(void 0, void 0, void 0, function* () 
         }
     })
         .then((response) => {
-        // console.log("có kết quả : ", response.data.choices)
+        console.log("có kết quả : ", response.data.choices);
         // console.log(response.data.choices[0].text);
         return response.data.choices[0].text;
     })

@@ -45,6 +45,11 @@ router.post(
   isAuth,
   upload("users").single('image_user'),
   authController.updateImage
-)
+);
+router.post(
+  '/loginGoogle',
+  validate(authValidation.loginGoogle),
+  authController.loginGoogle
+);
 
 export default router;

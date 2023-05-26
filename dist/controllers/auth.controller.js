@@ -91,6 +91,23 @@ const authController = {
             next(error);
         }
     }),
+    loginGoogle: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const { email } = req.body;
+        try {
+            const { user, message } = yield auth_services_1.default.loginGoogle({ email });
+            if (user) {
+                const { accessToken, refreshToken } = (0, JWT_1.generateToken)(user);
+                res.status(http_status_1.default.OK).send({
+                    user, message,
+                    accessToken,
+                    refreshToken
+                });
+            }
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
     updateInfo: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         const { id_user, email, phone, fullname, username, description, birthday, gender } = req.body;
         try {

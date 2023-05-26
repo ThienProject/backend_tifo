@@ -16,6 +16,11 @@ const authValidation = {
             password: joi_1.default.string().required(),
         }),
     },
+    loginGoogle: {
+        body: joi_1.default.object().keys({
+            email: joi_1.default.string().required().email(),
+        }),
+    },
     register: {
         body: joi_1.default.object().keys({
             fullname: joi_1.default.string().required(),

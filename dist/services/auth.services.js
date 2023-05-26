@@ -80,6 +80,24 @@ const authService = {
             throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'Password incorrect');
         }
     }),
+    loginGoogle: (body) => __awaiter(void 0, void 0, void 0, function* () {
+        const { email } = body;
+        const row = yield (0, connectDB_1.default)(`select * from user where  user.id_user not in (select banned.id_user from banned) and email ="${email}"`);
+        if (_.isEmpty(row)) {
+            throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'User does not exist');
+        }
+        const user = row[0];
+        if (user === null || user === void 0 ? void 0 : user.id_user) {
+            const { password } = user, userRest = __rest(user, ["password"]);
+            return {
+                user: userRest,
+                message: "Logged in successfully !"
+            };
+        }
+        else {
+            throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'Password incorrect');
+        }
+    }),
     updateInfo: (body) => __awaiter(void 0, void 0, void 0, function* () {
         const { id_user, email, phone, fullname, username, description, birthday, gender } = body;
         const check = yield (0, connectDB_1.default)(`(select username, email, phone from user WHERE id_user = null)

@@ -143,7 +143,6 @@ const messageController = {
     createChat: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         const { id_user, id_room, id_friend, isChatbot, type, message } = req.body;
         const file = req.file;
-        console.log(file === null || file === void 0 ? void 0 : file.filename);
         try {
             if (!isChatbot) {
                 const { chat, date } = yield message_services_1.default.createChat({

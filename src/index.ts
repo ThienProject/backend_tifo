@@ -1,10 +1,12 @@
 import express, { Express, Request, Response, NextFunction } from 'express';
+const fs = require('fs');
 import dotenv from 'dotenv';
 import routes from './routes';
 import cors from 'cors'
 import morgan from 'morgan';
 import { errorConverter, errorHandler } from './middleware/error';
 import multer from 'multer';
+const https = require('https');
 import userService from './services/user.services';
 dotenv.config();
 const port = process.env.PORT;
@@ -28,10 +30,15 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 });
 app.use(
   cors({
-    // origin: 'http://localhost:3000',
+    // origin: ['https://tifo-social-network.vercel.app', 'http://localhost:3000'], // Hoặc cấu hình nguồn gốc của bạn (ví dụ: 'http://localhost:3000')
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'RefreshToken', 'Referrer-Policy'], // Thêm 'Referrer-Policy' vào danh sách các tiêu đề cho phép
   })
 );
-
+app.use((req: Request, res: Response, next: NextFunction) => {
+  res.setHeader('Referrer-Policy', 'no-referrer'); // Hoặc giá trị chính sách Referrer Policy mong muốn
+  next();
+});
 // v1 api routes
 app.use('/api/v1', routes);
 app.get('/', (req: Request, res: Response) => {
@@ -40,11 +47,16 @@ app.get('/', (req: Request, res: Response) => {
 
 app.use(errorConverter);
 app.use(errorHandler);
+
 const server = require('http').createServer(app);
+
+
+
 export const io = require('socket.io')(server, {
   cors: {
-    // origin: 'http://localhost:3000',
-    methods: ["GET", "POST"]
+    origin: '*', // Hoặc cấu hình nguồn gốc của bạn (ví dụ: 'http://localhost:3000')
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'RefreshToken', 'Referrer-Policy'], // Thêm 'Referrer-Policy' vào danh sách các tiêu đề cho phép
   }
 });
 

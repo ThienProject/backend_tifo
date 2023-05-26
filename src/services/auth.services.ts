@@ -72,6 +72,27 @@ const authService = {
       )
     }
   },
+  loginGoogle: async (body: IUser) => {
+    const { email } = body;
+    const row: any = await queryDb(`select * from user where  user.id_user not in (select banned.id_user from banned) and email ="${email}"`);
+    if (_.isEmpty(row)) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST, 'User does not exist');
+    }
+    const user = row[0];
+    if (user?.id_user) {
+      const { password, ...userRest } = user;
+      return {
+        user: userRest,
+        message: "Logged in successfully !"
+      }
+    }
+    else {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST, 'Password incorrect'
+      )
+    }
+  },
   updateInfo: async (body: IUser) => {
     const { id_user, email, phone, fullname, username, description, birthday, gender } = body;
     const check: any = await queryDb(`(select username, email, phone from user WHERE id_user = null)

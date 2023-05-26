@@ -146,7 +146,6 @@ const messageController = {
       message
     } = req.body;
     const file = req.file;
-    console.log(file?.filename);
     try {
       if (!isChatbot) {
         const { chat, date } = await messageServices.createChat({

@@ -73,6 +73,22 @@ const authController = {
       next(error);
     }
   },
+  loginGoogle: async (req: Request, res: Response, next: NextFunction) => {
+    const { email } = req.body;
+    try {
+      const { user, message } = await authService.loginGoogle({ email });
+      if (user) {
+        const { accessToken, refreshToken } = generateToken(user);
+        res.status(httpStatus.OK).send({
+          user, message,
+          accessToken,
+          refreshToken
+        })
+      }
+    } catch (error) {
+      next(error);
+    }
+  },
   updateInfo: async (req: Request, res: Response, next: NextFunction) => {
     const { id_user, email, phone, fullname, username, description, birthday, gender } = req.body;
     try {

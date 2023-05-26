@@ -13,6 +13,11 @@ const authValidation = {
       password: Joi.string().required(),
     }),
   },
+  loginGoogle: {
+    body: Joi.object().keys({
+      email: Joi.string().required().email(),
+    }),
+  },
   register: {
     body: Joi.object().keys({
       fullname: Joi.string().required(),
