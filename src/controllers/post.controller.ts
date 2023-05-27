@@ -208,7 +208,6 @@ const postController = {
   },
   deleteMedias: async (req: Request, res: Response, next: NextFunction) => {
     const { medias } = req.body;
-    // console.log(medias);
     try {
       const { message } = await postService.deleteMedias({
         medias

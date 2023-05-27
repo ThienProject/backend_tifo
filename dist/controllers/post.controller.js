@@ -200,7 +200,6 @@ const postController = {
     }),
     deleteMedias: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         const { medias } = req.body;
-        // console.log(medias);
         try {
             const { message } = yield post_services_1.default.deleteMedias({
                 medias

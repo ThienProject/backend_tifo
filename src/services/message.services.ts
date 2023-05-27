@@ -333,7 +333,6 @@ const messageService = {
     const rows: any = await queryDb(sql);
     const chats: any[] = rows.reverse();
     if (chats.length > 0) {
-      console.log(chats[0])
       const { room_type: type, id_room, name, room_avatar } = chats[0];
       const newChats = chats.reduce((previousValue, currentValue) => {
         const { avatar, username, fullname, id_user } = currentValue;

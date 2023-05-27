@@ -164,7 +164,6 @@ const postService = {
         GROUP BY post.id_post, user.id_user
         ORDER BY post.date_time DESC
         LIMIT ${limit} OFFSET ${offset};`;
-        console.log(sql);
         const rows = yield (0, connectDB_1.default)(sql);
         const posts = rows;
         for (let i = 0; i <= posts.length - 1; i++) {

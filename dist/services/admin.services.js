@@ -123,7 +123,6 @@ const authService = {
         let sql = `insert into banned (id_user, reason) values ('${id_user}', '${reason}')`;
         const row = yield (0, connectDB_1.default)(sql);
         if (row.insertId >= 0) {
-            console.log(row);
             return {
                 id_user: id_user,
                 message: 'banned success !'
@@ -138,7 +137,6 @@ const authService = {
         let sql = `update post set is_banned = true , banned_reason = '${reason}'  where id_post  = '${id_post}'`;
         const row = yield (0, connectDB_1.default)(sql);
         if (row.insertId >= 0) {
-            console.log(row);
             return {
                 id_post: id_post,
                 message: 'banned success !'

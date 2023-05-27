@@ -44,14 +44,9 @@ app.use((err, req, res, next) => {
     }
 });
 app.use((0, cors_1.default)({
-    // origin: ['https://tifo-social-network.vercel.app', 'http://localhost:3000'], // Hoặc cấu hình nguồn gốc của bạn (ví dụ: 'http://localhost:3000')
-    methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'RefreshToken', 'Referrer-Policy'], // Thêm 'Referrer-Policy' vào danh sách các tiêu đề cho phép
+    // origin: 'http://localhost:3000', // Hoặc cấu hình nguồn gốc của bạn (ví dụ: 'http://localhost:3000')
+    methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH'],
 }));
-app.use((req, res, next) => {
-    res.setHeader('Referrer-Policy', 'no-referrer'); // Hoặc giá trị chính sách Referrer Policy mong muốn
-    next();
-});
 // v1 api routes
 app.use('/api/v1', routes_1.default);
 app.get('/', (req, res) => {
@@ -62,9 +57,8 @@ app.use(error_1.errorHandler);
 const server = require('http').createServer(app);
 exports.io = require('socket.io')(server, {
     cors: {
-        origin: '*',
-        methods: ['GET', 'POST'],
-        allowedHeaders: ['Content-Type', 'Authorization', 'RefreshToken', 'Referrer-Policy'], // Thêm 'Referrer-Policy' vào danh sách các tiêu đề cho phép
+        // origin: '*', // Hoặc cấu hình nguồn gốc của bạn (ví dụ: 'http://localhost:3000')
+        methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH']
     }
 });
 exports.userSockets = {};

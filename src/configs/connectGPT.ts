@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const model = 'text-davinci-003';
-const apiKey = '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';
+const apiKey = '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';
 // const context = [
 //   { "role": "user", "content": "Tôi là Thiên." },
 //   // { "role": "chatbot", "content": "" },
@@ -33,7 +33,6 @@ export const sendMessage = async (context: TContext) => {
     .then((response) => {
       console.log("có kết quả : ", response.data.choices)
 
-      // console.log(response.data.choices[0].text);
       return response.data.choices[0].text;
     })
     .catch((error) => {

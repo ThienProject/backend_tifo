@@ -149,7 +149,7 @@ const postService = {
         ORDER BY post.date_time DESC
         LIMIT ${limit} OFFSET ${offset};`;
 
-    console.log(sql);
+
     const rows: any = await queryDb(sql)
 
     const posts = rows;

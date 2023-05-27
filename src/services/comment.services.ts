@@ -39,7 +39,6 @@ const commentServices = {
     const { id_post } = query;
     const comments: any = await queryDb(`select comment.*, user.id_user,user.avatar, user.fullname, user.username from comment, user where id_post = '${id_post}' and user.id_user = comment.id_user `);
     const roofCmt = [...comments];
-    // console.log(comments)
     const solveComment = (comments: any[]) => {
       for (let i = 0; i < comments.length; i++) {
         if (comments[i].id_parent == 0) {
@@ -47,7 +46,6 @@ const commentServices = {
             if (comments[i]) {
 
               if (comments[i].id_comment === comments[j].id_parent) {
-                // console.log("id_comment", comments[j].id_parent)
                 if (!Array.isArray(comments[i].children)) {
                   comments[i].children = [];
                 }

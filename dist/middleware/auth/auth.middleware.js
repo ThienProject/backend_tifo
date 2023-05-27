@@ -25,15 +25,9 @@ const isAuth = (req, res, next) => __awaiter(void 0, void 0, void 0, function* (
         const accessToken = accessTokenFromHeader === null || accessTokenFromHeader === void 0 ? void 0 : accessTokenFromHeader.split(' ')[1];
         const refreshToken = refreshTokenFromHeader && refreshTokenFromHeader.split(' ')[1];
         const isValidToken = accessToken && (0, JWT_1.validateToken)(accessToken);
-        // console.log("isValidToken", isValidToken);
-        // console.log("accessToken", accessTokenFromHeader);
-        // console.log("refreshToken--------------------------------------------------------------------------");
-        // console.log("refreshToken", refreshToken);
         if (!isValidToken) {
             const verifiedRefreshToken = refreshToken && (0, JWT_1.validateRefreshToken)(refreshToken);
-            console.log("verifiedRefreshToken", verifiedRefreshToken);
             if (!verifiedRefreshToken) {
-                console.log("....................................");
                 next();
                 // return  res.status(401).send();
             }

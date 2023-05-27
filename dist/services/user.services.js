@@ -60,7 +60,7 @@ const userService = {
      and  follow.id_follower ='${id_me}'
      left JOIN (select id_user, COUNT(follow.id_follower) as  followers from follow where follow.status = 'accept' GROUP by id_user) as followers on 		followers.id_user = user.id_user
      LEFT join (select id_follower, COUNT(follow.id_user)  as  followings from follow where follow.status = 'accept'  GROUP by id_follower) as  followings  		on	followings.id_follower = user.id_user
-     WHERE user.id_user not in (select banned.id_user from banned)  and user.id_user='${id_user}'`);
+     WHERE user.id_user not in (select banned.id_user from banned)  and user.id_user='${id_user}' and user.id_role = 2`);
         if (_.isEmpty(rows))
             throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "Can't find out user account!");
         else {
@@ -98,13 +98,6 @@ const userService = {
     getUsersNotInRoom: (paramsBody) => __awaiter(void 0, void 0, void 0, function* () {
         const { q, offset, limit, id_user, id_room } = paramsBody;
         const users = yield (0, connectDB_1.default)(`
-      select id_user,	id_role,	fullname,	username,	description,	phone,	email,	address,	birthday,	gender,	avatar,	cover from user 
-      where id_user <> '${id_user}' and (id_user = "${q}" or fullname like "%${q}%" or username like "%${q}%") and user.id_role = 2
-      and id_user not in (select user_room.id_user from user_room where id_room = "${id_room}")
-      order by fullname desc
-      limit ${limit} offset ${offset}
-      `);
-        console.log(`
       select id_user,	id_role,	fullname,	username,	description,	phone,	email,	address,	birthday,	gender,	avatar,	cover from user 
       where id_user <> '${id_user}' and (id_user = "${q}" or fullname like "%${q}%" or username like "%${q}%") and user.id_role = 2
       and id_user not in (select user_room.id_user from user_room where id_room = "${id_room}")
@@ -151,7 +144,6 @@ const userService = {
         let sql = `insert into follow (id_user, id_follower, status) values ('${id_user}', '${id_follower}','waiting')`;
         const row = yield (0, connectDB_1.default)(sql);
         if (row.insertId >= 0) {
-            console.log(row);
             return {
                 id_follow: row.insertId,
                 message: 'request follow success !'
@@ -168,7 +160,6 @@ const userService = {
         if (row.insertId >= 0) {
             let sql = `select count(id_follower) as followers from follow where id_user =  '${id_user}' and follow.status ='accept'`;
             const followerSQl = yield (0, connectDB_1.default)(sql);
-            // console.log(row)
             const followers = followerSQl[0].followers;
             return {
                 followers: followers,

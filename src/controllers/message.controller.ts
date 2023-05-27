@@ -14,7 +14,6 @@ const messageController = {
     const id_room = query.id_room;
     try {
       const { chats, message, room } = await messageServices.getChatsByIDRoom(query);
-      // console.log(room)
       if (chats) {
         return res.status(httpStatus.OK).send({
           chats: chats,

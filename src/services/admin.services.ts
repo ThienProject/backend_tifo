@@ -111,7 +111,6 @@ const authService = {
     const row: any = await queryDb(sql);
 
     if (row.insertId >= 0) {
-      console.log(row);
       return {
         id_user: id_user,
         message: 'banned success !'
@@ -126,7 +125,6 @@ const authService = {
     const row: any = await queryDb(sql);
 
     if (row.insertId >= 0) {
-      console.log(row);
       return {
         id_post: id_post,
         message: 'banned success !'

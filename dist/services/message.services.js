@@ -365,7 +365,6 @@ const messageService = {
         const rows = yield (0, connectDB_1.default)(sql);
         const chats = rows.reverse();
         if (chats.length > 0) {
-            console.log(chats[0]);
             const { room_type: type, id_room, name, room_avatar } = chats[0];
             const newChats = chats.reduce((previousValue, currentValue) => {
                 var _a;
