@@ -12,7 +12,7 @@ const postValidation = {
       Joi.object({
         filename: Joi.string().required(),
         mimetype: Joi.string().valid('image/png', 'image/jpg', 'image/jpeg', 'video/mp4', 'video/quicktime').required(),
-        size: Joi.number().max(20 * 1024 * 1024).required(), // 10MB
+        size: Joi.number().max(30 * 1024 * 1024).required(), // 10MB
         fieldname: Joi.string(),
         encoding: Joi.string(),
         path: Joi.string(),

@@ -15,7 +15,7 @@ const postValidation = {
         files: joi_1.default.array().required().items(joi_1.default.object({
             filename: joi_1.default.string().required(),
             mimetype: joi_1.default.string().valid('image/png', 'image/jpg', 'image/jpeg', 'video/mp4', 'video/quicktime').required(),
-            size: joi_1.default.number().max(20 * 1024 * 1024).required(),
+            size: joi_1.default.number().max(30 * 1024 * 1024).required(),
             fieldname: joi_1.default.string(),
             encoding: joi_1.default.string(),
             path: joi_1.default.string(),
