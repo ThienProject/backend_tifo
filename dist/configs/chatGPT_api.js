@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendMessage = void 0;
 const axios_1 = __importDefault(require("axios"));
 const model = 'text-davinci-003';
-const apiKey = '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';
+const apiKey = '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';
 const sendMessage = (prompt) => __awaiter(void 0, void 0, void 0, function* () {
     return yield axios_1.default
         .post('https://api.openai.com/v1/engines/' + model + '/completions', {

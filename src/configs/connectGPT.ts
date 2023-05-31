@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const model = 'text-davinci-003';
-const apiKey = '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';
+const apiKey = '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';
 // const context = [
 //   { "role": "user", "content": "Tôi là Thiên." },
 //   // { "role": "chatbot", "content": "" },
