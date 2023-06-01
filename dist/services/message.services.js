@@ -94,7 +94,7 @@ const messageService = {
             id_room = yield checkRoomID(users[0].id_user, users[1].id_user);
         if (!id_room) {
             id_room = (0, uniqid_1.default)('ROOM_').toUpperCase();
-            const sqlRoom = `insert into Room (id_room, type, name) values("${id_room}", "${type}", ${name ? `"${name}"` : null});`;
+            const sqlRoom = `insert into room (id_room, type, name) values("${id_room}", "${type}", ${name ? `"${name}"` : null});`;
             const room = yield (0, connectDB_1.default)(sqlRoom);
             if (room.insertId >= 0) {
                 let id_owner = '';
