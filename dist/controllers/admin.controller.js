@@ -90,6 +90,35 @@ const authController = {
             next(error);
         }
     }),
+    unlockUser: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const { id_user } = req.body;
+        try {
+            const { message } = yield admin_services_1.default.unlockUser({
+                id_user
+            });
+            return res.status(http_status_1.default.CREATED).send({
+                message,
+            });
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
+    changeRoleUser: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const { id_user, id_role, } = req.body;
+        try {
+            const { message } = yield admin_services_1.default.changeRoleUser({
+                id_user,
+                id_role
+            });
+            return res.status(http_status_1.default.CREATED).send({
+                message,
+            });
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
     lockPost: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         const { id_post, id_user, reason, } = req.body;
         try {

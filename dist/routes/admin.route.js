@@ -17,6 +17,8 @@ router.post('/post/gets', admin_controller_1.default.getPosts);
 router.post('/post/get', admin_controller_1.default.getPost);
 router.post('/post/lock', admin_controller_1.default.lockPost);
 router.post('/user/lock', admin_controller_1.default.lockUser);
+router.post('/user/unlock', admin_controller_1.default.unlockUser);
+router.post('/user/changeRole', admin_controller_1.default.changeRoleUser);
 router.post('/user/statistics', admin_controller_1.default.userStatistics);
 router.post('/user/statistics/age', admin_controller_1.default.userStatisticsAge),
     router.post('/follow/statistics', admin_controller_1.default.followStatistics),

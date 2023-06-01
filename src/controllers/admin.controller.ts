@@ -76,6 +76,40 @@ const authController = {
       next(error);
     }
   },
+  unlockUser: async (req: Request, res: Response, next: NextFunction) => {
+    const {
+      id_user
+    } = req.body;
+
+    try {
+      const { message } = await adminService.unlockUser({
+        id_user
+      })
+      return res.status(httpStatus.CREATED).send({
+        message,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+  changeRoleUser: async (req: Request, res: Response, next: NextFunction) => {
+    const {
+      id_user,
+      id_role,
+    } = req.body;
+
+    try {
+      const { message } = await adminService.changeRoleUser({
+        id_user,
+        id_role
+      })
+      return res.status(httpStatus.CREATED).send({
+        message,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
   lockPost: async (req: Request, res: Response, next: NextFunction) => {
     const {
       id_post,

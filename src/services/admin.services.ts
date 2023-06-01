@@ -119,6 +119,33 @@ const authService = {
       throw new ApiError(httpStatus.BAD_REQUEST, 'banned failed, please try again later!');
     }
   },
+  unlockUser: async (body: any) => {
+    const { id_user } = body;
+    let sql = `delete from banned where banned.id_user=  '${id_user}'`;
+    const row: any = await queryDb(sql);
+    if (row.insertId >= 0) {
+      return {
+        id_user: id_user,
+        message: 'unlock user success !'
+      }
+    } else {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'unlock user failed, please try again later!');
+    }
+  },
+  changeRoleUser: async (body: any) => {
+    const { id_role, id_user } = body;
+    let sql = `update user set id_role = '${id_role}' where id_user = '${id_user}'`;
+    const row: any = await queryDb(sql);
+
+    if (row.insertId >= 0) {
+      return {
+        id_user: id_user,
+        message: 'change role success !'
+      }
+    } else {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'change role failed, please try again later!');
+    }
+  },
   lockPost: async (body: any) => {
     const { reason, id_post } = body;
     let sql = `update post set is_banned = true , banned_reason = '${reason}'  where id_post  = '${id_post}'`;

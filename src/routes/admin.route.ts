@@ -36,6 +36,14 @@ router.post(
   adminController.lockUser
 );
 router.post(
+  '/user/unlock',
+  adminController.unlockUser
+);
+router.post(
+  '/user/changeRole',
+  adminController.changeRoleUser
+);
+router.post(
   '/user/statistics',
   adminController.userStatistics
 )
