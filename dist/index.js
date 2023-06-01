@@ -57,7 +57,7 @@ app.use(error_1.errorHandler);
 const server = require('http').createServer(app);
 exports.io = require('socket.io')(server, {
     cors: {
-        // origin: '*', // Hoặc cấu hình nguồn gốc của bạn (ví dụ: 'http://localhost:3000')
+        origin: '*',
         methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH']
     }
 });
