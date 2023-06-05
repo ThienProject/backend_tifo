@@ -146,6 +146,20 @@ const authService = {
             throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'unlock user failed, please try again later!');
         }
     }),
+    unlockPost: (body) => __awaiter(void 0, void 0, void 0, function* () {
+        const { id_post } = body;
+        let sql = `update post set is_banned = false , banned_reason = "Null"  where id_post  = '${id_post}'`;
+        const row = yield (0, connectDB_1.default)(sql);
+        if (row.insertId >= 0) {
+            return {
+                id_post: id_post,
+                message: 'unlock success !'
+            };
+        }
+        else {
+            throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'unlock failed, please try again later!');
+        }
+    }),
     changeRoleUser: (body) => __awaiter(void 0, void 0, void 0, function* () {
         const { id_role, id_user } = body;
         let sql = `update user set id_role = '${id_role}' where id_user = '${id_user}'`;
@@ -196,7 +210,7 @@ const authService = {
          ELSE 'active'
        END AS status
     from user, (select count(id_post) as total from post  ${id_user ? ` where post.id_user = '${id_user}'` : ' '})as count, post
-    left join (SELECT  report.id_post, count(report.id_post) as count FROM report GROUP by report.id_post ) as report 
+    left join (SELECT  report.id_post, count(report.id_post) as count FROM report, post where post.id_post =  report.id_post and post.is_banned = false GROUP by report.id_post ) as report 
      on report.id_post = post.id_post
     left join (SELECT  love.id_post, count(love.id_post) as count FROM love  GROUP by love.id_post) as loves 
     on loves.id_post = post.id_post

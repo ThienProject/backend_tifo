@@ -40,6 +40,10 @@ router.post(
   adminController.unlockUser
 );
 router.post(
+  '/post/unlock',
+  adminController.unLockPost
+);
+router.post(
   '/user/changeRole',
   adminController.changeRoleUser
 );

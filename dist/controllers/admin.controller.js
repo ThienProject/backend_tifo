@@ -119,6 +119,26 @@ const authController = {
             next(error);
         }
     }),
+    unLockPost: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const { id_post } = req.body;
+        try {
+            const { message } = yield admin_services_1.default.unlockPost({
+                id_post
+            });
+            if (message) {
+                // await authService.sendNotification({ id_post, id_user, type: 'banned_post' })
+                // res.send({
+                //   message,
+                // });
+            }
+            return res.status(http_status_1.default.OK).send({
+                message,
+            });
+        }
+        catch (error) {
+            next(error);
+        }
+    }),
     lockPost: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         const { id_post, id_user, reason, } = req.body;
         try {

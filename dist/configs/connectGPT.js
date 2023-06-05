@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendMessage = void 0;
 const axios_1 = __importDefault(require("axios"));
 const model = 'text-davinci-003';
-const apiKey = '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';
+const apiKey = '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';
 const sendMessage = (context) => __awaiter(void 0, void 0, void 0, function* () {
     const promptHis = context.reduce((acc, obj) => {
         return `${acc}${obj.content}\n`;
@@ -39,7 +39,7 @@ const sendMessage = (context) => __awaiter(void 0, void 0, void 0, function* () 
         return response.data.choices[0].text;
     })
         .catch((error) => {
-        console.log("có lỗi api gpt");
+        console.log("có lỗi api gpt", error);
         throw error;
     });
 });

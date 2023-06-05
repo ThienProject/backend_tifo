@@ -79,7 +79,7 @@ const getChatRecent = () => __awaiter(void 0, void 0, void 0, function* () {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth() + 1;
     const day = currentDate.getDate();
-    const date = `${year}-${month.toString().padStart(2, '0')}-${day}`;
+    const date = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
     const id_room = newChat.id_room;
     const avatar = newChat.avatar_room;
     const name = newChat.name;
@@ -261,7 +261,7 @@ const messageService = {
                     const year = currentDate.getFullYear();
                     const month = currentDate.getMonth() + 1;
                     const day = currentDate.getDate();
-                    const date = `${year}-${month.toString().padStart(2, '0')}-${day}`;
+                    const date = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
                     chat = { [date]: [{ username, status, off_time, invisible, fullname, avatar, id_user, id_chat, message, datetime, type: chat_type, affected_username }] };
                 }
                 if (index === -1) {
@@ -378,7 +378,7 @@ const messageService = {
                     const year = currentDate.getFullYear();
                     const month = currentDate.getMonth() + 1;
                     const day = currentDate.getDate();
-                    const date = `${year}-${month.toString().padStart(2, '0')}-${day}`;
+                    const date = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
                     const index = (_a = previousValue.chats) === null || _a === void 0 ? void 0 : _a.findIndex((item) => Object.keys(item)[0] === date);
                     if (index === -1) {
                         previousValue.chats.push({

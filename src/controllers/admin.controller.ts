@@ -110,6 +110,28 @@ const authController = {
       next(error);
     }
   },
+  unLockPost: async (req: Request, res: Response, next: NextFunction) => {
+    const {
+      id_post
+    } = req.body;
+
+    try {
+      const { message } = await adminService.unlockPost({
+        id_post
+      })
+      if (message) {
+        // await authService.sendNotification({ id_post, id_user, type: 'banned_post' })
+        // res.send({
+        //   message,
+        // });
+      }
+      return res.status(httpStatus.OK).send({
+        message,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
   lockPost: async (req: Request, res: Response, next: NextFunction) => {
     const {
       id_post,

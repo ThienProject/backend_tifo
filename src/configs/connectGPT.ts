@@ -1,11 +1,12 @@
 import axios from 'axios';
 
 const model = 'text-davinci-003';
-const apiKey = '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';
+const apiKey = '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';
 // const context = [
 //   { "role": "user", "content": "Tôi là Thiên." },
 //   // { "role": "chatbot", "content": "" },
 // ];
+
 type TMessage = { role: string, content: string }
 export type TContext = TMessage[];
 export const sendMessage = async (context: TContext) => {
@@ -32,11 +33,10 @@ export const sendMessage = async (context: TContext) => {
     )
     .then((response) => {
       console.log("có kết quả : ", response.data.choices)
-
       return response.data.choices[0].text;
     })
     .catch((error) => {
-      console.log("có lỗi api gpt")
+      console.log("có lỗi api gpt", error)
       throw error
     });
 };

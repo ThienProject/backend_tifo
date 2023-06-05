@@ -1,14 +1,14 @@
 import axios from 'axios';
 
 const model = 'text-davinci-003';
-const apiKey = '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';
+const apiKey = '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';
 export const sendMessage = async (prompt: string) => {
   return await axios
     .post(
       'https://api.openai.com/v1/engines/' + model + '/completions',
       {
         prompt: prompt,
-        max_tokens: 500,
+        max_tokens: 300,
         n: 1,
         stop: null,
         temperature: 0.5
@@ -25,6 +25,7 @@ export const sendMessage = async (prompt: string) => {
       return response.data.choices[0].text;
     })
     .catch((error) => {
+      console.log("có lỗi api gpt", error.response)
       console.error(error);
     });
 };

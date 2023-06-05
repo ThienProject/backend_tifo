@@ -15,27 +15,27 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.executeDb = void 0;
 const promise_1 = __importDefault(require("mysql2/promise"));
 // // create the connection to database
-const config = {
-    db: {
-        host: 'mysql-127954-0.cloudclusters.net',
-        port: 10164,
-        user: 'admin',
-        password: 'hxlsPdSL',
-        database: 'tifo',
-        connectionLimit: 10,
-        waitForConnections: true
-    },
-};
 // const config = {
 //   db: {
-//     host: 'localhost',
-//     user: 'root',
-//     password: '',
+//     host: 'mysql-127954-0.cloudclusters.net',
+//     port: 10164,
+//     user: 'admin',
+//     password: 'hxlsPdSL',
 //     database: 'tifo',
 //     connectionLimit: 10,
 //     waitForConnections: true
 //   },
 // };
+const config = {
+    db: {
+        host: 'localhost',
+        user: 'root',
+        password: '',
+        database: 'tifo',
+        connectionLimit: 10,
+        waitForConnections: true
+    },
+};
 const pool = promise_1.default.createPool(config.db);
 function queryDb(query) {
     return __awaiter(this, void 0, void 0, function* () {
