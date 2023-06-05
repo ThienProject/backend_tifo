@@ -17,10 +17,10 @@ const promise_1 = __importDefault(require("mysql2/promise"));
 // // create the connection to database
 const config = {
     db: {
-        host: 'mysql-127954-0.cloudclusters.net',
-        port: 10164,
+        host: 'mysql-130176-0.cloudclusters.net',
+        port: 18071,
         user: 'admin',
-        password: 'hxlsPdSL',
+        password: 'm7UypRVa',
         database: 'tifo',
         connectionLimit: 10,
         waitForConnections: true
