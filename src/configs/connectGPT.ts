@@ -1,7 +1,8 @@
 import axios from 'axios';
+import freeze from './freeze';
 
 const model = 'text-davinci-003';
-const apiKey = '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';
+const apiKey = freeze.apiKey;
 // const context = [
 //   { "role": "user", "content": "Tôi là Thiên." },
 //   // { "role": "chatbot", "content": "" },

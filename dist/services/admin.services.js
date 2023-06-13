@@ -63,7 +63,9 @@ const authService = {
         left JOIN role ON role.id_role = user.id_role 
         LEFT JOIN post ON post.id_user = user.id_user
         LEFT JOIN banned ON banned.id_user = user.id_user
-        left JOIN (select post.id_user,COALESCE(count(DISTINCT post.id_post),0) as count from report, post WHERE post.id_post = report.id_post group by post.id_post) as post_reports on post_reports.id_user = user.id_user
+        left JOIN (select post.id_user,
+          COALESCE(count(DISTINCT post.id_post),0) as count from report, 
+          post WHERE post.id_post = report.id_post and post.is_banned = false group by post.id_post) as post_reports on post_reports.id_user = user.id_user
         where role.id_role <> 3
         ${filterSql} 
         GROUP BY user.id_user
@@ -103,7 +105,7 @@ const authService = {
         RIGHT JOIN role ON role.id_role = user.id_role AND role.id_role <> 3
         LEFT JOIN post ON post.id_user = user.id_user
         LEFT JOIN banned ON banned.id_user = user.id_user
-        left JOIN (select post.id_user,COALESCE(count(DISTINCT post.id_post),0) as count from report, post WHERE post.id_post = report.id_post group by post.id_post ) as post_reports on post_reports.id_user = user.id_user
+        left JOIN (select post.id_user,COALESCE(count(DISTINCT post.id_post),0) as count from report, post WHERE post.id_post = report.id_post  and post.is_banned = false group by post.id_post ) as post_reports on post_reports.id_user = user.id_user
         where user.id_user = '${id_user}'
         GROUP BY user.id_user
         ORDER BY status DESC`);

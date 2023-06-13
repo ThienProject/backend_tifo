@@ -1,7 +1,8 @@
 import axios from 'axios';
+import freeze from './freeze';
 
 const model = 'text-davinci-003';
-const apiKey = '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';
+const apiKey = freeze.apiKey;
 export const sendMessage = async (prompt: string) => {
   return await axios
     .post(

@@ -14,8 +14,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendMessage = void 0;
 const axios_1 = __importDefault(require("axios"));
+const freeze_1 = __importDefault(require("./freeze"));
 const model = 'text-davinci-003';
-const apiKey = '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';
+const apiKey = freeze_1.default.apiKey;
 const sendMessage = (context) => __awaiter(void 0, void 0, void 0, function* () {
     const promptHis = context.reduce((acc, obj) => {
         return `${acc}${obj.content}\n`;
