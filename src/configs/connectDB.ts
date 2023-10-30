@@ -3,27 +3,27 @@ import { RowDataPacket } from 'mysql2';
 
 // // create the connection to database
 
+const config = {
+  db: {
+    host: process.env.HOST_DOMAIN || 'mysql-130176-0.cloudclusters.net',
+    port: process.env.PORT || 18071,
+    user: process.env.USER || 'admin',
+    password: process.env.PASSWORD || 'm7UypRVa',
+    database: process.env.DATABASE || 'tifo',
+    connectionLimit: 10,
+    waitForConnections: true
+  },
+};
 // const config = {
 //   db: {
-//     host: 'mysql-130176-0.cloudclusters.net',
-//     port: 18071,
-//     user: 'admin',
-//     password: 'm7UypRVa',
+//     host: 'localhost',
+//     user: 'root',
+//     password: '',
 //     database: 'tifo',
 //     connectionLimit: 10,
 //     waitForConnections: true
 //   },
 // };
-const config = {
-  db: {
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'tifo',
-    connectionLimit: 10,
-    waitForConnections: true
-  },
-};
 const pool = mysql.createPool(config.db);
 async function queryDb(query: any) {
   const connection = await pool.getConnection();
