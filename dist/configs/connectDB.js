@@ -18,7 +18,7 @@ const promise_1 = __importDefault(require("mysql2/promise"));
 const config = {
     db: {
         host: process.env.HOST_DOMAIN || 'mysql-130176-0.cloudclusters.net',
-        port: process.env.PORT || 18071,
+        port: process.env.PORT_DATABASE || 18071,
         user: process.env.USER || 'admin',
         password: process.env.PASSWORD || 'm7UypRVa',
         database: process.env.DATABASE || 'tifo',
