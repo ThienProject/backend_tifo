@@ -17,15 +17,16 @@ const promise_1 = __importDefault(require("mysql2/promise"));
 // // create the connection to database
 const config = {
     db: {
-        host: process.env.HOST_DOMAIN || 'mysql-130176-0.cloudclusters.net',
-        port: process.env.PORT_DATABASE || 18071,
+        host: process.env.HOST_DOMAIN || 'mysql-152494-0.cloudclusters.net',
+        port: process.env.PORT_DATABASE || 10010,
         user: process.env.USER || 'admin',
-        password: process.env.PASSWORD || 'm7UypRVa',
+        password: process.env.PASSWORD || 'R2p4wdLg',
         database: process.env.DATABASE || 'tifo',
         connectionLimit: 10,
         waitForConnections: true
     },
 };
+console.log(config);
 // const config = {
 //   db: {
 //     host: 'localhost',
